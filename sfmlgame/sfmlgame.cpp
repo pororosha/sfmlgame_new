@@ -1,33 +1,85 @@
-﻿#include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <vector>
 #include <iostream>
+#include <string>
 
 using namespace sf;
+using namespace std;
 
 Vector2i mouse_pos; //текущие координаты курсора
 Font font;
 
+struct hero {
+    int hits = 10, max_hits = 10, CD = 12, atk = 5, dmgb = 3, dmgd = 4;
+};
+hero hero1;
+
+class NPC {
+public:
+    NPC() {}
+    void changeAll(string name, bool gender, int x, int y, int rad) {
+        this->name = name;
+        this->coords.x = x;
+        this->coords.y = y;
+        this->texture.loadFromFile(name + ".png");
+        this->image.setTexture(texture);
+        this->image.setOrigin(rad, rad);
+        this->image.setPosition(coords);
+        this->gender = gender;
+    }
+    int dialog_study = 0;
+    bool gender = true;
+    string name;
+    Sprite image;
+    Texture texture;
+    Vector2f coords;
+};
+
+void dialog(NPC pp) {
+    cout << "я пидорас\nи ещё раз\n и ещё раз\n";
+}
+
 void inventory() {
     RenderWindow i_window(sf::VideoMode(600, 600), L"Инвентарь", Style::Default);
-    CircleShape banan(50);
-    bool nado = false;
+    Vector2u size = i_window.getSize();
+    bool mpr, mt = false;
+    RectangleShape attack(Vector2f(600.f, 300.f));
+    attack.setFillColor(Color::Green);
+    RectangleShape damage(Vector2f(600.f, 300.f));
+    damage.setFillColor(Color::Red);
+    damage.setPosition(0.f, 300.f);
+    Text text_atk;
+    text_atk.setFont(font);
+    text_atk.setString("attack bonus: " + to_string(hero1.atk));
+    text_atk.setCharacterSize(50);
+    text_atk.setFillColor(sf::Color::Black);
+    text_atk.setPosition(10, 10);
     while (i_window.isOpen()) {
         Event event;
-        nado = false;
         while (i_window.pollEvent(event)) {
             if (event.type == Event::Closed) i_window.close();
-        }
-
-        if (Mouse::isButtonPressed(Mouse::Right)) {
-            mouse_pos = Mouse::getPosition(i_window);
-            if (mouse_pos.x > 0 and mouse_pos.x < 600 and mouse_pos.y > 0 and mouse_pos.y < 600) {
-                nado = true;
+            else if (event.type == Event::Resized) {
+                cout << "I forbid everyone within a radius of 100 meters from me to change the size of windows until I say 'allow'" <<"\n";
             }
         }
 
+        mpr = mt; mt = Mouse::isButtonPressed(Mouse::Left);
+
+        if (mt and not mpr) {
+            mouse_pos = Mouse::getPosition(i_window);
+            mpr = false;
+            if (mouse_pos.x > 0 and mouse_pos.x < 600 and mouse_pos.y > 0 and mouse_pos.y < 600) {
+                hero1.atk -= 1;
+                text_atk.setString("attack bonus: " + to_string(hero1.atk));
+                cout << 1;
+            }
+        }
         i_window.clear(Color::Blue);
-        if (nado) i_window.draw(banan);
+        i_window.setSize(size);
+        i_window.draw(attack);
+        i_window.draw(damage);
+        i_window.draw(text_atk);
         i_window.display();
     }
 }
@@ -38,8 +90,8 @@ int main() {
     if (!font.loadFromFile("font.ttf")) return 0;
     Sound sound;
     sound.setBuffer(buffer);
-    sound.play();
-    sound.setLoop(true);
+    //sound.play();
+    //sound.setLoop(true);
     Vector2u razm;//размеры окна по х и у
     razm.x = 1000;
     razm.y = 1000;
@@ -49,7 +101,7 @@ int main() {
     View view(FloatRect(0, 0, razm.x, razm.y));//создаём камеру, размером с окно
     Text text_main;
     text_main.setFont(font);
-    text_main.setString("I'm an absolute");
+    text_main.setString("Hits: " + to_string(hero1.hits) + "/" + to_string(hero1.max_hits));
     text_main.setCharacterSize(100);
     text_main.setFillColor(sf::Color::Red);
     text_main.setPosition(10, razm.y - 110);
@@ -89,7 +141,12 @@ int main() {
         {0,0,800,50},
         {750,0,800,800},
         {0,750,800,800}
-    }; // весёлые задавушки)))
+    }; // весёлые задавушки))) и дальше тоже))))))))
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    int npc_c = 1;
+    NPC mas [1];
+    mas[0].changeAll("zxc", true, 100, 100, rad);
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     while (window.isOpen()) {
         Event event;
@@ -110,9 +167,21 @@ int main() {
                 text_main.setPosition(10+dx, razm.y - 110 + dy);
             }
         }
+
+        islkm_old = islkm;
+        if (Mouse::isButtonPressed(Mouse::Middle) and is_mouse_in_window) islkm = true; //нажата ли левая кнопка мыши
+        else islkm = false;
+
+        if (islkm and islkm_old) {
+            viewcenter.x = viewcenter.x - mouse_pos.x + mouse_old.x;
+            viewcenter.y = viewcenter.y - mouse_pos.y + mouse_old.y;
+            dx += (mouse_old.x - mouse_pos.x);
+            dy += (mouse_old.y - mouse_pos.y);
+            view.setCenter(viewcenter.x, viewcenter.y);
+            text_main.setPosition(10 + dx, razm.y - 110 + dy);
+        } //если левая кнопка мыши удерживается - двигаем камеру за курсором
    
         //////////////////////////////////////////////ПЕРЕДВИЖЕНИЕ/////////////////////////////////////////////////////////////////////////////////////
-        //len = sqrt(pow((mouse_position.x - x + dx), 2) + pow((mouse_position.y - y + dy), 2));
 
         if (Mouse::isButtonPressed(Mouse::Right) and is_mouse_in_window) {
             len = sqrt(pow((mouse_pos.x - x + dx), 2) + pow((mouse_pos.y - y + dy), 2));
@@ -137,19 +206,16 @@ int main() {
         if (is_floor and len > rad) { x += vx; y += vy; len -= movespeed; }//двигаем, если не стенка
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        islkm_old = islkm;
-        if (Mouse::isButtonPressed(Mouse::Middle) and is_mouse_in_window) islkm = true; //нажата ли левая кнопка мыши
-        else islkm = false;
-
-        if (islkm and islkm_old) {
-            viewcenter.x = viewcenter.x - mouse_pos.x + mouse_old.x;
-            viewcenter.y = viewcenter.y - mouse_pos.y + mouse_old.y;
-            dx += (mouse_old.x - mouse_pos.x);
-            dy += (mouse_old.y - mouse_pos.y);
-            view.setCenter(viewcenter.x, viewcenter.y);
-            text_main.setPosition(10 + dx, razm.y - 110 + dy);
-        } //если левая кнопка мыши удерживается - двигаем камеру за курсором
+        
+        if (Mouse::isButtonPressed(Mouse::Left) and is_mouse_in_window) {
+            for (int i = 0; i < npc_c; i++) {
+                if (abs(mas[i].coords.x - mouse_pos.x - dx) < rad and abs(mas[i].coords.y - mouse_pos.y - dy) < rad) {
+                    dialog(mas[i]);
+                }
+            }
+        }
+        
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         mouse_old = mouse_pos;
 
@@ -162,11 +228,15 @@ int main() {
         window.draw(map);
         window.draw(hero); //рисуем собсна героя
         window.draw(text_main);
+        for (int i = 0; i < npc_c; i++) {
+            window.draw(mas[i].image);
+        }
         window.display();//хз, так надо
 
         if (Keyboard::isKeyPressed(Keyboard::I) and is_mouse_in_window) {
             inventory();
-            text_main.setString("You're an absolute");
+            text_main.setString("Hits: " + to_string(hero1.hits) + "/" + to_string(hero1.max_hits));
+            cout << "allow";
         }
     }
     return 0;
