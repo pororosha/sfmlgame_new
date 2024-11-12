@@ -15,8 +15,7 @@ struct hero {
 };
 hero hero1;
 
-class NPC {
-public:
+struct NPC {
     NPC() {}
     void changeAll(string name, bool gender, int x, int y, int rad) {
         this->name = name;
@@ -28,7 +27,7 @@ public:
         this->image.setPosition(coords);
         this->gender = gender;
     }
-    int dialog_study = 0;
+    int dia_num = 0;
     bool gender = true;
     string name;
     Sprite image;
@@ -36,8 +35,35 @@ public:
     Vector2f coords;
 };
 
-void dialog(NPC pp) {
-    cout << "я пидорас\nи ещё раз\n и ещё раз\n";
+int dialog(NPC pp) {
+    RenderWindow d_window(sf::VideoMode(600, 600), L"Диалог", Style::Default);
+    Vector2u size = d_window.getSize();
+    bool mpr, mt = false;
+    Text phrase;
+    phrase.setFont(font);
+    phrase.setString("NE ORI! \nPRIDUROK!");
+    phrase.setCharacterSize(50);
+    phrase.setFillColor(sf::Color::Black);
+    phrase.setPosition(10, 10);
+    Sprite background;
+    Texture txt;
+    if (not txt.loadFromFile(pp.name + "_dia.png")) return 1;
+    background.setTexture(txt);
+    while (d_window.isOpen()) {
+        Event event;
+        while (d_window.pollEvent(event)) {
+            if (event.type == Event::Closed) d_window.close();
+            else if (event.type == Event::Resized) {
+                cout << "I forbid everyone within a radius of 100 meters from me to change the size of windows until I say 'allow'" << "\n";
+                d_window.setSize(size);
+            }
+        }
+        d_window.clear(Color::Blue);
+        d_window.draw(background);
+        d_window.draw(phrase);
+        d_window.display();
+    }
+    return 1;
 }
 
 void inventory() {
@@ -60,7 +86,8 @@ void inventory() {
         while (i_window.pollEvent(event)) {
             if (event.type == Event::Closed) i_window.close();
             else if (event.type == Event::Resized) {
-                cout << "I forbid everyone within a radius of 100 meters from me to change the size of windows until I say 'allow'" <<"\n";
+                cout << "I forbid everyone within a radius of 100 meters from me to change the size of windows until I say 'allow'" << "\n";
+                i_window.setSize(size);
             }
         }
 
@@ -76,7 +103,6 @@ void inventory() {
             }
         }
         i_window.clear(Color::Blue);
-        i_window.setSize(size);
         i_window.draw(attack);
         i_window.draw(damage);
         i_window.draw(text_atk);
@@ -87,11 +113,11 @@ void inventory() {
 int main() {
     SoundBuffer buffer;//крч в ближайших нескольких строках обитает подключение звука
     if (!buffer.loadFromFile("phonk.mp3")) return -1;
-    if (!font.loadFromFile("font.ttf")) return 0;
     Sound sound;
     sound.setBuffer(buffer);
-    //sound.play();
-    //sound.setLoop(true);
+    sound.play();
+    sound.setLoop(true);
+    if (!font.loadFromFile("font.ttf")) return 0;
     Vector2u razm;//размеры окна по х и у
     razm.x = 1000;
     razm.y = 1000;
@@ -144,7 +170,7 @@ int main() {
     }; // весёлые задавушки))) и дальше тоже))))))))
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     int npc_c = 1;
-    NPC mas [1];
+    NPC mas[1];
     mas[0].changeAll("zxc", true, 100, 100, rad);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -164,7 +190,7 @@ int main() {
                 dx -= (razm.x - razm_old.x) / 2;//меняем восприятие мыши при изменении размера окна
                 dy -= (razm.y - razm_old.y) / 2;//не знаю, как это работает, но работает => не трогаем
                 razm_old = razm;
-                text_main.setPosition(10+dx, razm.y - 110 + dy);
+                text_main.setPosition(10 + dx, razm.y - 110 + dy);
             }
         }
 
@@ -180,7 +206,7 @@ int main() {
             view.setCenter(viewcenter.x, viewcenter.y);
             text_main.setPosition(10 + dx, razm.y - 110 + dy);
         } //если левая кнопка мыши удерживается - двигаем камеру за курсором
-   
+
         //////////////////////////////////////////////ПЕРЕДВИЖЕНИЕ/////////////////////////////////////////////////////////////////////////////////////
 
         if (Mouse::isButtonPressed(Mouse::Right) and is_mouse_in_window) {
@@ -206,7 +232,7 @@ int main() {
         if (is_floor and len > rad) { x += vx; y += vy; len -= movespeed; }//двигаем, если не стенка
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         if (Mouse::isButtonPressed(Mouse::Left) and is_mouse_in_window) {
             for (int i = 0; i < npc_c; i++) {
                 if (abs(mas[i].coords.x - mouse_pos.x - dx) < rad and abs(mas[i].coords.y - mouse_pos.y - dy) < rad) {
@@ -214,7 +240,7 @@ int main() {
                 }
             }
         }
-        
+
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         mouse_old = mouse_pos;
