@@ -36,6 +36,10 @@ struct NPC {
 };
 
 int dialog(NPC pp) {
+<<<<<<< HEAD
+=======
+    int penis = 20;//сантиметров
+>>>>>>> верим?
     RenderWindow d_window(sf::VideoMode(600, 600), L"Диалог", Style::Default);
     Vector2u size = d_window.getSize();
     bool mpr, mt = false;
