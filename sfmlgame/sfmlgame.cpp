@@ -2,6 +2,7 @@
 #include <SFML/Audio.hpp>
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <string>
 
 using namespace sf;
@@ -38,29 +39,109 @@ struct NPC {
 int dialog(NPC pp) {
 	RenderWindow d_window(sf::VideoMode(600, 600), L"Dialog", Style::Default);
 	Vector2u size = d_window.getSize();
-	bool mpr, mt = false;
-	Text phrase;
+	bool spspr, sps = false, choose = false, ext = false;
+	string line;
+	ifstream in(pp.name+"_std.txt");
+	getline(in, line);
+	int n = stoi(line), it = 0;
+	getline(in, line);
+	Text phrase, mf;
 	phrase.setFont(font);
-	phrase.setString("NE ORI! \nPRIDUROK!");
+	phrase.setString(line);
 	phrase.setCharacterSize(50);
 	phrase.setFillColor(sf::Color::Black);
 	phrase.setPosition(10, 10);
+	mf.setFont(font);
+	mf.setString("Visitors    stranges    nothing");
+	mf.setCharacterSize(50);
+	mf.setFillColor(sf::Color::Black);
+	mf.setPosition(10, size.y - 110);
 	Sprite background;
 	Texture txt;
 	if (not txt.loadFromFile(pp.name + "_dia.png")) return 1;
-	background.setTexture(txt);
+	background.setTexture(txt);	
 	while (d_window.isOpen()) {
 		Event event;
 		while (d_window.pollEvent(event)) {
 			if (event.type == Event::Closed) d_window.close();
 			else if (event.type == Event::Resized) {
-				cout << "I forbid everyone within a radius of 100 meters from me to change the size of windows until I say 'allow'" << "\n";
 				d_window.setSize(size);
 			}
 		}
+
+		spspr = sps;
+		sps = Keyboard::isKeyPressed(Keyboard::Space);
+
+		if (choose) {
+			if (Keyboard::isKeyPressed(Keyboard::Num1)) {
+				getline(in, line);
+				it = stoi(line);
+				for (int i = 0; i < it; i++) {
+					getline(in, line);
+				}
+				choose = false;
+				sps = true;
+				spspr = false;
+			}
+			else if (Keyboard::isKeyPressed(Keyboard::Num2)) {
+				getline(in, line);
+				getline(in, line);
+				it = stoi(line);
+				for (int i = 0; i < it; i++) {
+					getline(in, line);
+				}
+				choose = false;
+				sps = true;
+				spspr = false;
+			}
+			else if (Keyboard::isKeyPressed(Keyboard::Num3)) {
+				getline(in, line);
+				getline(in, line);
+				getline(in, line);
+				it = stoi(line);
+				for (int i = 0; i < it; i++) {
+					getline(in, line);
+				}
+				choose = false;
+				sps = true;
+				spspr = false;
+			}
+		}
+		if ((not choose and sps and not spspr) or ext) {
+			ext = false;
+			getline(in, line);
+			if (line == "4") return 1;
+			else if (line == "0") {
+				in.close();
+				in.open(pp.name + "_std.txt");
+				for (int i = 0; i < n; i++) {
+					getline(in, line);
+				}
+				ext = true;
+				continue;
+			}
+			else if (line == "1") {
+				getline(in, line);
+				phrase.setString(line);
+				phrase.setPosition(10, 10);
+			}
+			else if (line == "2") {
+				getline(in, line);
+				phrase.setString(line);
+				phrase.setPosition(10, size.y-110);
+			}
+			else if (line == "3") {
+				choose = true;
+				getline(in, line);
+				phrase.setString(line);
+				phrase.setPosition(10, 10);
+			}
+		}
+
 		d_window.clear(Color::Blue);
 		d_window.draw(background);
 		d_window.draw(phrase);
+		if (choose) d_window.draw(mf);
 		d_window.display();
 	}
 	return 1;
@@ -86,7 +167,6 @@ void inventory() {
 		while (i_window.pollEvent(event)) {
 			if (event.type == Event::Closed) i_window.close();
 			else if (event.type == Event::Resized) {
-				cout << "I forbid everyone within a radius of 100 meters from me to change the size of windows until I say 'allow'" << "\n";
 				i_window.setSize(size);
 			}
 		}
