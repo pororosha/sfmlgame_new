@@ -28,124 +28,130 @@ struct NPC {
 		this->image.setPosition(coords);
 		this->gender = gender;
 	}
+	int dialog() {
+		RenderWindow d_window(sf::VideoMode(750, 750), L"Dialog", Style::Default);
+		Vector2u size = d_window.getSize();
+		bool spspr, sps = false, choose = false, ext = false;
+		string line;
+		ifstream in(this->name + "_std.txt");
+		getline(in, line);
+		int n = stoi(line), it = 0;
+		getline(in, line);
+		Text phrase, mf;
+		phrase.setFont(font);
+		phrase.setString(line);
+		phrase.setCharacterSize(50);
+		phrase.setFillColor(sf::Color::Black);
+		phrase.setPosition(10, 10);
+		mf.setFont(font);
+		mf.setString("Visitors    stranges    nothing");
+		mf.setCharacterSize(50);
+		mf.setFillColor(sf::Color::Black);
+		mf.setPosition(10, size.y - 110);
+		Sprite background;
+		Texture txt;
+		if (not txt.loadFromFile(this->name + "_dia.png")) return 1;
+		background.setTexture(txt);
+		while (d_window.isOpen()) {
+			Event event;
+			while (d_window.pollEvent(event)) {
+				if (event.type == Event::Closed) d_window.close();
+				else if (event.type == Event::Resized) {
+					d_window.setSize(size);
+				}
+			}
+
+			spspr = sps;
+			sps = Keyboard::isKeyPressed(Keyboard::Space);
+
+			if (choose) {
+				if (Keyboard::isKeyPressed(Keyboard::Num1)) {
+					getline(in, line);
+					it = stoi(line);
+					for (int i = 0; i < it; i++) {
+						getline(in, line);
+					}
+					choose = false;
+					sps = true;
+					spspr = false;
+				}
+				else if (Keyboard::isKeyPressed(Keyboard::Num2)) {
+					getline(in, line);
+					getline(in, line);
+					it = stoi(line);
+					for (int i = 0; i < it; i++) {
+						getline(in, line);
+					}
+					choose = false;
+					sps = true;
+					spspr = false;
+				}
+				else if (Keyboard::isKeyPressed(Keyboard::Num3)) {
+					getline(in, line);
+					getline(in, line);
+					getline(in, line);
+					it = stoi(line);
+					for (int i = 0; i < it; i++) {
+						getline(in, line);
+					}
+					choose = false;
+					sps = true;
+					spspr = false;
+				}
+			}
+			if ((not choose and sps and not spspr) or ext) {
+				ext = false;
+				getline(in, line);
+				if (line == "4") return 1;
+				else if (line == "0") {
+					in.close();
+					in.open(this->name + "_std.txt");
+					for (int i = 0; i < n; i++) {
+						getline(in, line);
+					}
+					ext = true;
+					continue;
+				}
+				else if (line == "1") {
+					getline(in, line);
+					phrase.setString(line);
+					phrase.setPosition(10, 10);
+				}
+				else if (line == "2") {
+					getline(in, line);
+					phrase.setString(line);
+					phrase.setPosition(10, size.y - 110);
+				}
+				else if (line == "3") {
+					choose = true;
+					getline(in, line);
+					phrase.setString(line);
+					phrase.setPosition(10, 10);
+					getline(in, line);
+					int lish = stoi(line);
+					for (int i = 0; i < lish; i++) {
+						getline(in, line);
+					}
+				}
+				else { phrase.setString(line); }
+			}
+
+			d_window.clear(Color::Blue);
+			d_window.draw(background);
+			d_window.draw(phrase);
+			if (choose) d_window.draw(mf);
+			d_window.display();
+		}
+		this->dia = true;
+		return 1;
+	}
 	int dia_num = 0;
-	bool gender = true;
+	bool gender = true, dia = false;
 	string name;
 	Sprite image;
 	Texture texture;
 	Vector2f coords;
 };
-
-int dialog(NPC pp) {
-	RenderWindow d_window(sf::VideoMode(600, 600), L"Dialog", Style::Default);
-	Vector2u size = d_window.getSize();
-	bool spspr, sps = false, choose = false, ext = false;
-	string line;
-	ifstream in(pp.name+"_std.txt");
-	getline(in, line);
-	int n = stoi(line), it = 0;
-	getline(in, line);
-	Text phrase, mf;
-	phrase.setFont(font);
-	phrase.setString(line);
-	phrase.setCharacterSize(50);
-	phrase.setFillColor(sf::Color::Black);
-	phrase.setPosition(10, 10);
-	mf.setFont(font);
-	mf.setString("Visitors    stranges    nothing");
-	mf.setCharacterSize(50);
-	mf.setFillColor(sf::Color::Black);
-	mf.setPosition(10, size.y - 110);
-	Sprite background;
-	Texture txt;
-	if (not txt.loadFromFile(pp.name + "_dia.png")) return 1;
-	background.setTexture(txt);	
-	while (d_window.isOpen()) {
-		Event event;
-		while (d_window.pollEvent(event)) {
-			if (event.type == Event::Closed) d_window.close();
-			else if (event.type == Event::Resized) {
-				d_window.setSize(size);
-			}
-		}
-
-		spspr = sps;
-		sps = Keyboard::isKeyPressed(Keyboard::Space);
-
-		if (choose) {
-			if (Keyboard::isKeyPressed(Keyboard::Num1)) {
-				getline(in, line);
-				it = stoi(line);
-				for (int i = 0; i < it; i++) {
-					getline(in, line);
-				}
-				choose = false;
-				sps = true;
-				spspr = false;
-			}
-			else if (Keyboard::isKeyPressed(Keyboard::Num2)) {
-				getline(in, line);
-				getline(in, line);
-				it = stoi(line);
-				for (int i = 0; i < it; i++) {
-					getline(in, line);
-				}
-				choose = false;
-				sps = true;
-				spspr = false;
-			}
-			else if (Keyboard::isKeyPressed(Keyboard::Num3)) {
-				getline(in, line);
-				getline(in, line);
-				getline(in, line);
-				it = stoi(line);
-				for (int i = 0; i < it; i++) {
-					getline(in, line);
-				}
-				choose = false;
-				sps = true;
-				spspr = false;
-			}
-		}
-		if ((not choose and sps and not spspr) or ext) {
-			ext = false;
-			getline(in, line);
-			if (line == "4") return 1;
-			else if (line == "0") {
-				in.close();
-				in.open(pp.name + "_std.txt");
-				for (int i = 0; i < n; i++) {
-					getline(in, line);
-				}
-				ext = true;
-				continue;
-			}
-			else if (line == "1") {
-				getline(in, line);
-				phrase.setString(line);
-				phrase.setPosition(10, 10);
-			}
-			else if (line == "2") {
-				getline(in, line);
-				phrase.setString(line);
-				phrase.setPosition(10, size.y-110);
-			}
-			else if (line == "3") {
-				choose = true;
-				getline(in, line);
-				phrase.setString(line);
-				phrase.setPosition(10, 10);
-			}
-		}
-
-		d_window.clear(Color::Blue);
-		d_window.draw(background);
-		d_window.draw(phrase);
-		if (choose) d_window.draw(mf);
-		d_window.display();
-	}
-	return 1;
-}
 
 void inventory() {
 	RenderWindow i_window(sf::VideoMode(600, 600), L"Inventory", Style::Default);
@@ -191,13 +197,12 @@ void inventory() {
 }
 
 int main() {
-	SoundBuffer buffer;//крч в ближайших нескольких строках обитает подключение звука
-	if (!buffer.loadFromFile("phonk.mp3")) return -1;
-	Sound sound;
-	sound.setBuffer(buffer);
-	sound.setVolume(5);
-	sound.play();
-	sound.setLoop(true);
+	//крч в ближайших нескольких строках обитает подключение звука
+	Music music;
+	music.openFromFile("main_theme.mp3");
+	music.setVolume(25);
+	music.play();
+	music.setLoop(true);
 	if (!font.loadFromFile("font.ttf")) return 0;
 	Vector2u razm;//размеры окна по х и у
 	razm.x = 1000;
@@ -218,9 +223,10 @@ int main() {
 	if (not SF.loadFromFile("zxc.png")) return -1;
 	hero.setOrigin(rad, rad);
 	hero.setTexture(SF);
+	int map_num = 1;
 	Sprite map;
 	Texture minimap;
-	if (not minimap.loadFromFile("map.png")) return -1;
+	if (not minimap.loadFromFile("map_"+ to_string(map_num) + ".png")) return -1;
 	map.setTexture(minimap);
 	map.setPosition(0, 0);
 	double vx = 0; //скорость персонажа
@@ -245,10 +251,10 @@ int main() {
 	int check;
 
 	int borders[num_obj][4]{//массив стенок
-	{0,0,50,2200},
-	{0,0,2200,50},
-	{2150,0,2200,2200},
-	{0,2150,2200,2200}
+	{0,0,50,5000},
+	{0,0,5000,50},
+	{4950,0,5000,5000},
+	{0,4950,5000,5000}
 	}; // весёлые задавушки))) и дальше тоже))))))))
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	int npc_c = 1;
@@ -269,15 +275,32 @@ int main() {
 			else if (event.type == Event::Resized) {
 				razm = window.getSize();
 				view.setSize(razm.x, razm.y);
-				dx -= (razm.x - razm_old.x) / 2;//меняем восприятие мыши при изменении размера окна
-				dy -= (razm.y - razm_old.y) / 2;//не знаю, как это работает, но работает => не трогаем
+				dx = dx - razm.x/2 + razm_old.x/2;//меняем восприятие мыши при изменении размера окна
+				dy = dy - razm.y/2 + razm_old.y/2;//не знаю, как это работает, но работает => не трогаем
 				razm_old = razm;
+				if (viewcenter.x < razm.x / 2) {
+					dx -= viewcenter.x - razm.x / 2;
+					viewcenter.x = razm.x / 2;
+				}
+				else if (viewcenter.x + razm.x / 2 > minimap.getSize().x) {
+					dx -= viewcenter.x - (minimap.getSize().x - razm.x / 2);
+					viewcenter.x = minimap.getSize().x - razm.x / 2;
+				}
+				if (viewcenter.y < razm.y / 2) {
+					dy -= viewcenter.y - razm.y / 2;
+					viewcenter.y = razm.y / 2;
+				}
+				else if (viewcenter.y + razm.y / 2 > minimap.getSize().y) {
+					dy -= viewcenter.y - (minimap.getSize().y - razm.y / 2);
+					viewcenter.y = minimap.getSize().y - razm.y / 2;
+				}
+				view.setCenter(viewcenter.x, viewcenter.y);
 				text_main.setPosition(10 + dx, razm.y - 110 + dy);
 			}
 		}
 
 		isckm_old = isckm;
-		if (Mouse::isButtonPressed(Mouse::Middle) and is_mouse_in_window) isckm = true; //нажата ли левая кнопка мыши
+		if (Mouse::isButtonPressed(Mouse::Middle) and is_mouse_in_window) isckm = true; //нажата ли центральная кнопка мыши
 		else isckm = false;
 
 		if (isckm and isckm_old) {
@@ -325,7 +348,7 @@ int main() {
 		if (Mouse::isButtonPressed(Mouse::Left) and is_mouse_in_window) {
 			for (int i = 0; i < npc_c; i++) {
 				if (abs(mas[i].coords.x - mouse_pos.x - dx) < rad and abs(mas[i].coords.y - mouse_pos.y - dy) < rad) {
-					dialog(mas[i]);
+					mas[i].dialog();
 				}
 			}
 		}

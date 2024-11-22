@@ -1,13 +1,21 @@
-8
+15
 Hello!
 2
-Hello!
+Hi!
 1
-Go sex?
+Who are you?
+And what are you doing there?
 2
-Let's go!
+I'm a hunter
+And I'm looking for a monster
+1
+Hunter... 
 3
-What you wana ask about?
+And what are you want from me?
+3
+3
+What would you like to know?
+0
 2
 6
 10
