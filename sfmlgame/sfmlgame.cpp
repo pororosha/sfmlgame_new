@@ -197,6 +197,21 @@ void inventory() {
 }
 
 int main() {
+	Vector2u razm;//размеры окна по х и у
+	razm.x = 1000;
+	razm.y = 1000;
+	Image icon;
+	Sprite load;
+	Texture load_t;
+	if (not load_t.loadFromFile("loading.png")) return -1;
+	load.setTexture(load_t);
+	load.setPosition(0, 0);
+	if (!icon.loadFromFile("icon.png") or !load_t.loadFromFile("loading.png")) return 1;
+	RenderWindow window(sf::VideoMode(razm.x, razm.y), L"Illusion", Style::Default);//создаём окно
+	window.setVerticalSyncEnabled(true);//изначально окно вертикально, чтоб без рандомных углов
+	window.setIcon(50, 50, icon.getPixelsPtr());
+	window.draw(load);
+	window.display();
 	//крч в ближайших нескольких строках обитает подключение звука
 	Music music;
 	music.openFromFile("main_theme.mp3");
@@ -204,12 +219,7 @@ int main() {
 	music.play();
 	music.setLoop(true);
 	if (!font.loadFromFile("font.ttf")) return 0;
-	Vector2u razm;//размеры окна по х и у
-	razm.x = 1000;
-	razm.y = 1000;
 	Vector2u razm_old = razm; //размеры окна до последнего изменения
-	RenderWindow window(sf::VideoMode(razm.x, razm.y), L"Illusion", Style::Default);//создаём окно
-	window.setVerticalSyncEnabled(true);//изначально окно вертикально, чтоб без рандомных углов
 	View view(FloatRect(0, 0, razm.x, razm.y));//создаём камеру, размером с окно
 	Text text_main;
 	text_main.setFont(font);
@@ -223,11 +233,12 @@ int main() {
 	if (not SF.loadFromFile("zxc.png")) return -1;
 	hero.setOrigin(rad, rad);
 	hero.setTexture(SF);
-	int map_num = 1;
 	Sprite map;
-	Texture minimap;
-	if (not minimap.loadFromFile("map_"+ to_string(map_num) + ".png")) return -1;
-	map.setTexture(minimap);
+	Texture minimap_1;
+	if (not minimap_1.loadFromFile("map_1.png")) return -1;
+	Texture minimap_2;
+	if (not minimap_2.loadFromFile("map_2.png")) return -1;
+	map.setTexture(minimap_1);
 	map.setPosition(0, 0);
 	double vx = 0; //скорость персонажа
 	double vy = 0;
@@ -241,8 +252,9 @@ int main() {
 	viewcenter.x = razm.x / 2; //изначально в центре
 	viewcenter.y = razm.y / 2;
 	hero.setPosition(viewcenter.x, viewcenter.y);//начальная позиция героя
-	bool isckm = false;//проверка, нажата ли левая кнопка мыши
-	bool isckm_old = false; //была ли нажата ли левая кнопка мыши в прошлом кадре
+	bool isckm = false;//проверка, нажата ли центральная кнопка мыши
+	bool isckm_old = false; //была ли нажата ли центральная кнопка мыши в прошлом кадре
+	bool islkm_old = false; //была ли нажата ли левая кнопка мыши в прошлом кадре
 	int dx = 0;//перемещение камеры по х
 	int dy = 0;//по у
 	bool is_mouse_in_window;//в окне ли курсор?
@@ -257,9 +269,13 @@ int main() {
 	{0,4950,5000,5000}
 	}; // весёлые задавушки))) и дальше тоже))))))))
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	int npc_c = 1;
-	NPC mas[1];
-	mas[0].changeAll("zxc", true, 100, 100, rad);
+	Vector2i npc_c;
+	npc_c.x = 1;
+	npc_c.y = 0;
+	int col = npc_c.x, tek_i = 0;
+	NPC mas[1][2];
+	mas[0][0].changeAll("zxc", true, 100, 100, rad);
+	mas[0][1].changeAll("zxc", true, 2000, 2000, rad);
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	while (window.isOpen()) {
@@ -282,17 +298,17 @@ int main() {
 					dx -= viewcenter.x - razm.x / 2;
 					viewcenter.x = razm.x / 2;
 				}
-				else if (viewcenter.x + razm.x / 2 > minimap.getSize().x) {
-					dx -= viewcenter.x - (minimap.getSize().x - razm.x / 2);
-					viewcenter.x = minimap.getSize().x - razm.x / 2;
+				else if (viewcenter.x + razm.x / 2 > minimap_1.getSize().x) {
+					dx -= viewcenter.x - (minimap_1.getSize().x - razm.x / 2);
+					viewcenter.x = minimap_1.getSize().x - razm.x / 2;
 				}
 				if (viewcenter.y < razm.y / 2) {
 					dy -= viewcenter.y - razm.y / 2;
 					viewcenter.y = razm.y / 2;
 				}
-				else if (viewcenter.y + razm.y / 2 > minimap.getSize().y) {
-					dy -= viewcenter.y - (minimap.getSize().y - razm.y / 2);
-					viewcenter.y = minimap.getSize().y - razm.y / 2;
+				else if (viewcenter.y + razm.y / 2 > minimap_1.getSize().y) {
+					dy -= viewcenter.y - (minimap_1.getSize().y - razm.y / 2);
+					viewcenter.y = minimap_1.getSize().y - razm.y / 2;
 				}
 				view.setCenter(viewcenter.x, viewcenter.y);
 				text_main.setPosition(10 + dx, razm.y - 110 + dy);
@@ -345,13 +361,20 @@ int main() {
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		if (Mouse::isButtonPressed(Mouse::Left) and is_mouse_in_window) {
-			for (int i = 0; i < npc_c; i++) {
-				if (abs(mas[i].coords.x - mouse_pos.x - dx) < rad and abs(mas[i].coords.y - mouse_pos.y - dy) < rad) {
-					mas[i].dialog();
+		if (Mouse::isButtonPressed(Mouse::Left) and not islkm_old and is_mouse_in_window and sqrt(pow((mouse_pos.x + dx - x), 2) + pow((mouse_pos.y + dy - y), 2)) < 150) {
+			if (sqrt(pow((mouse_pos.x + dx - 2500), 2) + pow((mouse_pos.y + dy - 2200), 2)) < 600) {
+				tek_i = 1 - tek_i;
+				if (tek_i == 0) map.setTexture(minimap_1);
+				else map.setTexture(minimap_2);
+			}
+			for (int i = 0; i < col; i++) {
+				if (abs(mas[i][tek_i].coords.x - mouse_pos.x - dx) < rad and abs(mas[i][tek_i].coords.y - mouse_pos.y - dy) < rad) {
+					mas[i][tek_i].dialog();
 				}
 			}
 		}
+		islkm_old = Mouse::isButtonPressed(Mouse::Left);
+
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -360,14 +383,14 @@ int main() {
 		hero.setPosition(x, y); //возможно возникает вопрос: а зачем задавать координаты, если можно
 		//использовать функцию .move, а я отвечу - да по фану, мне просто координаты нужны для
 		//расчётов выше, поэтому они есть.
-
+		
 		window.setView(view); //переводимся на вид с камеры
-		window.clear(Color::Blue); //чистим, чтобы не накладывались рисунки
+		window.clear(); //чистим, чтобы не накладывались рисунки
 		window.draw(map);
 		window.draw(hero); //рисуем собсна героя
 		window.draw(text_main);
-		for (int i = 0; i < npc_c; i++) {
-			window.draw(mas[i].image);
+		for (int i = 0; i < npc_c.x; i++) {
+			window.draw(mas[i][tek_i].image);
 		}
 		window.display();//хз, так надо
 
