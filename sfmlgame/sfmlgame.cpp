@@ -27,9 +27,13 @@ struct NPC {
 		this->image.setOrigin(rad, rad);
 		this->image.setPosition(coords);
 		this->gender = gender;
+		if (gender) this->buffer.loadFromFile("male_voice.mp3");
+		else this->buffer.loadFromFile("female_voice.mp3");
+		sound.setBuffer(buffer);
+		sound.setVolume(10);
 	}
 	int dialog() {
-		RenderWindow d_window(sf::VideoMode(750, 750), L"Dialog", Style::Default);
+		RenderWindow d_window(sf::VideoMode(750, 750), this->name, Style::Default);
 		Vector2u size = d_window.getSize();
 		bool spspr, sps = false, choose = false, ext = false;
 		string line;
@@ -44,7 +48,7 @@ struct NPC {
 		phrase.setFillColor(sf::Color::Black);
 		phrase.setPosition(10, 10);
 		mf.setFont(font);
-		mf.setString("Visitors    stranges    nothing");
+		mf.setString("Visitors?    Stranges?    Bye!");
 		mf.setCharacterSize(50);
 		mf.setFillColor(sf::Color::Black);
 		mf.setPosition(10, size.y - 110);
@@ -52,6 +56,7 @@ struct NPC {
 		Texture txt;
 		if (not txt.loadFromFile(this->name + "_dia.png")) return 1;
 		background.setTexture(txt);
+		sound.play();
 		while (d_window.isOpen()) {
 			Event event;
 			while (d_window.pollEvent(event)) {
@@ -98,7 +103,7 @@ struct NPC {
 					sps = true;
 					spspr = false;
 				}
-			}
+			} 
 			if ((not choose and sps and not spspr) or ext) {
 				ext = false;
 				getline(in, line);
@@ -116,6 +121,7 @@ struct NPC {
 					getline(in, line);
 					phrase.setString(line);
 					phrase.setPosition(10, 10);
+					this->sound.play();
 				}
 				else if (line == "2") {
 					getline(in, line);
@@ -127,13 +133,18 @@ struct NPC {
 					getline(in, line);
 					phrase.setString(line);
 					phrase.setPosition(10, 10);
+					this->sound.play();
 					getline(in, line);
 					int lish = stoi(line);
 					for (int i = 0; i < lish; i++) {
 						getline(in, line);
 					}
 				}
-				else { phrase.setString(line); }
+				else { 
+					cout << "da\n";
+					phrase.setString(line);
+					if (phrase.getPosition().y==10) this->sound.play();
+				}
 			}
 
 			d_window.clear(Color::Blue);
@@ -151,6 +162,8 @@ struct NPC {
 	Sprite image;
 	Texture texture;
 	Vector2f coords;
+	SoundBuffer  buffer;
+	Sound sound;
 };
 
 void inventory() {
@@ -259,14 +272,22 @@ int main() {
 	int dy = 0;//по у
 	bool is_mouse_in_window;//в окне ли курсор?
 	bool is_floor;//находится ли курсор в допустимой для перемещения области
-	const int num_obj = 4;
 	int check;
+	int count = 0;
 
-	int borders[num_obj][4]{//массив стенок
-	{0,0,50,5000},
-	{0,0,5000,50},
-	{4950,0,5000,5000},
-	{0,4950,5000,5000}
+	int borders[2][4][4]{ 
+		{
+		{0,0,50,5000},
+		{0,0,5000,50},
+		{4950,0,5000,5000},
+		{0,4950,5000,5000}
+		},
+		{
+		{ 0,0,50,5000 },
+		{0,0,5000,50},
+		{4950,0,5000,5000},
+		{0,4950,5000,5000}
+		}
 	}; // весёлые задавушки))) и дальше тоже))))))))
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	Vector2i npc_c;
@@ -275,7 +296,7 @@ int main() {
 	int col = npc_c.x, tek_i = 0;
 	NPC mas[1][2];
 	mas[0][0].changeAll("zxc", true, 100, 100, rad);
-	mas[0][1].changeAll("zxc", true, 2000, 2000, rad);
+	mas[0][1].changeAll("zxc", true, 1000, 1000, rad);
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	while (window.isOpen()) {
@@ -316,7 +337,10 @@ int main() {
 		}
 
 		isckm_old = isckm;
-		if (Mouse::isButtonPressed(Mouse::Middle) and is_mouse_in_window) isckm = true; //нажата ли центральная кнопка мыши
+		if (Mouse::isButtonPressed(Mouse::Middle) and is_mouse_in_window) {
+			isckm = true; //нажата ли центральная кнопка мыши
+
+		}
 		else isckm = false;
 
 		if (isckm and isckm_old) {
@@ -350,9 +374,11 @@ int main() {
 			vy = 0;
 		}
 
-		for (int i = 0; i < num_obj; i++) {
-			if (borders[i][0] <= (x + vx) and borders[i][2] >= (x + vx) and borders[i][1] <= (y + vy) and borders[i][3] >= (y + vy)) {
+		check = sizeof(borders[tek_i]) / sizeof(borders[tek_i][0]);
+		for (int i = 0; i < check; i++) {
+			if (borders[tek_i][i][0] <= (x + vx) and borders[tek_i][i][2] >= (x + vx) and borders[tek_i][i][1] <= (y + vy) and borders[tek_i][i][3] >= (y + vy)) {
 				is_floor = false;
+				cout<<i <<"  "<< check<< "  ya pidoras\n";
 				break;
 			}
 		}
@@ -360,16 +386,22 @@ int main() {
 		if (is_floor and len > rad) { x += vx; y += vy; len -= movespeed; }//двигаем, если не стенка
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		if (Mouse::isButtonPressed(Mouse::Left) and not islkm_old and is_mouse_in_window and sqrt(pow((mouse_pos.x + dx - x), 2) + pow((mouse_pos.y + dy - y), 2)) < 150) {
-			if (sqrt(pow((mouse_pos.x + dx - 2500), 2) + pow((mouse_pos.y + dy - 2200), 2)) < 600) {
+		
+		check = sqrt(pow((mouse_pos.x + dx - x), 2) + pow((mouse_pos.y + dy - y), 2));
+		if (Mouse::isButtonPressed(Mouse::Left) and not islkm_old and is_mouse_in_window) {
+			count++;
+			if (count%2==1)	cout << "{" << mouse_pos.x + dx << "," << mouse_pos.y + dy << ",";
+			else cout << mouse_pos.x + dx << "," << mouse_pos.y + dy << "},\n";
+			if (sqrt(pow((mouse_pos.x + dx - 2500), 2) + pow((mouse_pos.y + dy - 2200), 2)) < 600 and check < 600) {
 				tek_i = 1 - tek_i;
 				if (tek_i == 0) map.setTexture(minimap_1);
 				else map.setTexture(minimap_2);
 			}
-			for (int i = 0; i < col; i++) {
-				if (abs(mas[i][tek_i].coords.x - mouse_pos.x - dx) < rad and abs(mas[i][tek_i].coords.y - mouse_pos.y - dy) < rad) {
-					mas[i][tek_i].dialog();
+			else if (check < 150) {
+				for (int i = 0; i < col; i++) {
+					if (abs(mas[i][tek_i].coords.x - mouse_pos.x - dx) < rad and abs(mas[i][tek_i].coords.y - mouse_pos.y - dy) < rad) {
+						mas[i][tek_i].dialog();
+					}
 				}
 			}
 		}
