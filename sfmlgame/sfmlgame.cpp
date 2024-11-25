@@ -24,6 +24,7 @@ struct NPC {
 		this->coords.y = y;
 		this->texture.loadFromFile(name + ".png");
 		this->image.setTexture(texture);
+		this->image.setTextureRect(IntRect(0, 0, 100, 100));
 		this->image.setOrigin(rad, rad);
 		this->image.setPosition(coords);
 		this->gender = gender;
@@ -32,7 +33,7 @@ struct NPC {
 		sound.setBuffer(buffer);
 		sound.setVolume(10);
 	}
-	int dialog() {
+	bool dialog() {
 		RenderWindow d_window(sf::VideoMode(750, 750), this->name, Style::Default);
 		Vector2u size = d_window.getSize();
 		bool spspr, sps = false, choose = false, ext = false;
@@ -154,7 +155,10 @@ struct NPC {
 			d_window.display();
 		}
 		this->dia = true;
-		return 1;
+		return true;
+	}
+	void set_frame(int frame) {
+		this->image.setTextureRect(IntRect(frame * 100, 0, 100, 100));
 	}
 	int dia_num = 0;
 	bool gender = true, dia = false;
@@ -246,6 +250,7 @@ int main() {
 	if (not SF.loadFromFile("zxc.png")) return -1;
 	hero.setOrigin(rad, rad);
 	hero.setTexture(SF);
+	hero.setTextureRect(IntRect(0,0,100,100));
 	Sprite map;
 	Texture minimap_1;
 	if (not minimap_1.loadFromFile("map_1.png")) return -1;
@@ -274,6 +279,7 @@ int main() {
 	bool is_floor;//находится ли курсор в допустимой для перемещения области
 	int check;
 	int count = 0;
+	int frame = 0, frames = 0, hod = 0; //всё про анимации
 
 	int borders[2][4][4]{ 
 		{
@@ -305,6 +311,7 @@ int main() {
 		is_floor = true;
 		mouse_pos = Mouse::getPosition(window); //смотрим, где курсор
 		is_mouse_in_window = mouse_pos.x >= 0 and mouse_pos.x <= razm.x and mouse_pos.y >= 0 and mouse_pos.y <= razm.y;
+		frames++;
 
 		////////////////////////////////////////////СОБЫТИЯ В ОКНЕ/////////////////////////////////////////////////////////////////////////////////////
 		while (window.pollEvent(event)) {
@@ -368,22 +375,29 @@ int main() {
 			if (vy <= 0) hero.setRotation(asin(vx) * 57.3);
 			else hero.setRotation(180 - asin(vx) * 57.3);
 			vx *= movespeed;
+			hod = 100;
+			hero.setTextureRect(IntRect(frame * 100, hod, 100, 100));
 		}//по теореме пифагора и подобиям задаём скорости по х и у, найдя синусы косинусы там...
 		else if (Keyboard::isKeyPressed(Keyboard::S) and is_mouse_in_window) {
 			vx = 0;
 			vy = 0;
+			hod = 0;
+			hero.setTextureRect(IntRect(frame * 100, hod, 100, 100));
 		}
 
 		check = sizeof(borders[tek_i]) / sizeof(borders[tek_i][0]);
 		for (int i = 0; i < check; i++) {
 			if (borders[tek_i][i][0] <= (x + vx) and borders[tek_i][i][2] >= (x + vx) and borders[tek_i][i][1] <= (y + vy) and borders[tek_i][i][3] >= (y + vy)) {
 				is_floor = false;
-				cout<<i <<"  "<< check<< "  ya pidoras\n";
 				break;
 			}
 		}
 
 		if (is_floor and len > rad) { x += vx; y += vy; len -= movespeed; }//двигаем, если не стенка
+		else {
+			hod = 0;
+			hero.setTextureRect(IntRect(frame * 100, hod, 100, 100));
+		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
@@ -392,7 +406,7 @@ int main() {
 			count++;
 			if (count%2==1)	cout << "{" << mouse_pos.x + dx << "," << mouse_pos.y + dy << ",";
 			else cout << mouse_pos.x + dx << "," << mouse_pos.y + dy << "},\n";
-			if (sqrt(pow((mouse_pos.x + dx - 2500), 2) + pow((mouse_pos.y + dy - 2200), 2)) < 600 and check < 600) {
+			if (sqrt(pow((mouse_pos.x + dx - 2500), 2) + pow((mouse_pos.y + dy - 2200), 2)) < 700 and check < 700) {
 				tek_i = 1 - tek_i;
 				if (tek_i == 0) map.setTexture(minimap_1);
 				else map.setTexture(minimap_2);
@@ -412,6 +426,13 @@ int main() {
 
 		mouse_old = mouse_pos;
 
+		if (frames % 50 == 0) {
+			frame = 1 - frame;
+			hero.setTextureRect(IntRect(frame * 100, hod, 100 , 100));
+			for (int i = 0; i < npc_c.x; i++) {
+				mas[i][tek_i].set_frame(frame);
+			}
+		} 
 		hero.setPosition(x, y); //возможно возникает вопрос: а зачем задавать координаты, если можно
 		//использовать функцию .move, а я отвечу - да по фану, мне просто координаты нужны для
 		//расчётов выше, поэтому они есть.
@@ -429,7 +450,6 @@ int main() {
 		if (Keyboard::isKeyPressed(Keyboard::I) and is_mouse_in_window) {
 			inventory();
 			text_main.setString("Hits: " + to_string(hero1.hits) + "/" + to_string(hero1.max_hits));
-			cout << "allow";
 		}
 	}
 	return 0;
