@@ -1,15 +1,19 @@
-15
-Hello!
-2
+19
 Hi!
+2
+Hello!
 1
 Who are you?
-And what are you doing there?
+To hell!
+I hope you brought me some ale?
 2
 I'm a hunter
-And I'm looking for a monster
 1
 Hunter... 
+Do I look like a boar?
+Okay, maybe a little, AHAHA!
+2
+No, I'm a monster hunter...
 3
 And what are you want from me?
 3
@@ -17,17 +21,35 @@ And what are you want from me?
 What would you like to know?
 0
 2
-6
-10
+19
+28
 2
-are you a sigma?
+What did you do this evening?
 1
-Yes!
+Oh, we discussed the negotiations
+that took place at the palace
+with our eastern "friends"
+and then...
+we're caroused all night long
+2
+With?
+1
+Are you need names?
+well...
+perso1
+perso2
+perso3
+that's all, leave me please
 0
 2
-are you a gigachad?
+Have you seen any strangers?
 1
-No!
+Hmm... Every invited can invite
+somebody else. So if you 
+looking for somebody, you probably 
+don't need one of the couples.
+2
+Thanks for advice
 0
 1
 Bye!
