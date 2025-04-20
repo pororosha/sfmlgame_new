@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
+#include <random>
 
 using namespace sf;
 using namespace std;
@@ -16,72 +18,13 @@ bool isInMass(int mas[], int element) {
 Vector2i mouse_pos; //текущие координаты курсора
 Font font;
 
-struct hero {
+struct Hero {
 	int hits = 10, max_hits = 10, CD = 12, atk = 5, dmgb = 3, dmgd = 4;
 };
-hero hero1;
-	
-struct room {// номер комнаты = её индекс в массиве
-	int rad = 50; //радиус персонажа, главное не забыть))) ширина двери = 2.5 радиуса
-	Vector2i coord0;
-	Vector2i coord1;
-	bool isObs = false;
-	vector<vector<int>> obstackles;
-	bool is_perso = false;
-	int perso_i;
-	int width = 100;
-	vector<vector<int>> escapes;
-	// 0 - сверху/справа/снизу/слева (1/2/3/4)  
-	// 1 - начальная координата относительно левого верхнего угла комнаты
-	// 2 - и его ширина в дверях (n);
-	// 3 - в какую комнату переходим
-	void changeAll(int x0, int y0, int x, int y){
-		this->coord0 = {x0, y0};
-		this->coord1 = { x,y };
-	}
-	void addEscape(int position, int doors, int dist, int next_room) {
-		escapes.push_back({ position, doors , dist, next_room });
-	}
-	void addObstackle(int x0,int y0, int x, int y) {
-		isObs = true;
-		obstackles.push_back({x0, y0, x, y});
-	}
-	void addNPC(int ind) {
-		is_perso = true;
-		perso_i = ind;
-	}
-	Vector3i isAbleToGo(Vector2f curPosition, Vector2f nextPosition) { 
-		bool x = true;
-		bool y = true;
-		for (size_t i = 0; i < obstackles.size(); i++) {
-			if ( x and (curPosition.y + rad > obstackles[1][i] and curPosition.y - rad < obstackles[3][i]) and (nextPosition.x + rad > obstackles[0][i] and nextPosition.x - rad < obstackles[2][i])) x = false;
-			if (y and (curPosition.x + rad > obstackles[0][i] and curPosition.x - rad < obstackles[2][i]) and (nextPosition.y + rad > obstackles[1][i] and nextPosition.y - rad < obstackles[3][i])) y = false;
-			if (not (y and x)) break;
-		}
-		return { 0 + (nextPosition.x - rad > coord0.x and nextPosition.x + rad < coord1.x and x), 0 + (nextPosition.y - rad > coord0.y and nextPosition.y + rad < coord1.y and y), isDoor(nextPosition)};
-	}
-	int isDoor(Vector2f nextPosition) {
-		for (size_t i = 0; i < escapes.size(); i++) {
-			if ((escapes[i][0] == 1 and nextPosition.y - rad < coord0.y and (nextPosition.x - rad > coord0.x + escapes[i][2] and nextPosition.x + rad < coord0.x + escapes[i][2] + escapes[i][1]))
-				or (escapes[i][0] == 2 and nextPosition.x + rad > coord1.x and (nextPosition.y - rad > coord0.y + escapes[i][2] and nextPosition.y + rad < coord0.y + escapes[i][2] + escapes[i][1]))
-				or (escapes[i][0] == 3 and nextPosition.y + rad > coord1.y and (nextPosition.x - rad > coord0.x + escapes[i][2] and nextPosition.x + rad < coord0.x + escapes[i][2] + escapes[i][1]))
-				or (escapes[i][0] == 4 and nextPosition.x - rad < coord0.x and (nextPosition.y - rad > coord0.y + escapes[i][2] and nextPosition.y + rad < coord0.y + escapes[i][2] + escapes[i][1]))) {
-				cout << "YES" << "\n";
-				return escapes[i][3];
-			}
-		} 
-		return -1;
-	}
-	bool isInRoom(Vector2f Position) {
-		bool is = Position.x < coord1.x and Position.y < coord1.y and Position.x > coord0.x and Position.y > coord0.y;
-		if (not is) cout << Position.y << "\n";
-		return (is);
-	}
-	room () {}
-};
+Hero hero1;
 
-struct guard {
-	guard() {}
+struct Guard {
+	Guard() {}
 	void changeAll(bool os, double x0, double y0, int L, bool napr) {
 		texture.loadFromFile("guard.png");
 		image.setOrigin(50, 50);
@@ -163,6 +106,21 @@ void fight(bool aboba) {
 
 struct NPC {
 	NPC() {}
+	NPC(string name, bool gender, int x, int y, int rad) {
+		this->name = name;
+		this->coords.x = x;
+		this->coords.y = y;
+		this->texture.loadFromFile(name + ".png");
+		this->image.setTexture(texture);
+		this->image.setTextureRect(IntRect(0, 0, 100, 100));
+		this->image.setOrigin(rad, rad);
+		this->image.setPosition(coords);
+		this->gender = gender;
+		if (gender) this->buffer.loadFromFile("male_voice.mp3");
+		else this->buffer.loadFromFile("female_voice.mp3");
+		sound.setBuffer(buffer);
+		sound.setVolume(10);
+	}
 	void changeAll(string name, bool gender, int x, int y, int rad) {
 		this->name = name;
 		this->coords.x = x;
@@ -178,7 +136,7 @@ struct NPC {
 		sound.setBuffer(buffer);
 		sound.setVolume(10);
 	}
-	bool dialog(int dia_n) {
+	bool dialog() {
 		RenderWindow d_window(sf::VideoMode(750, 750), this->name, Style::Default);
 		Vector2u size = d_window.getSize();
 		Vector2i mp = Mouse::getPosition(d_window);
@@ -270,12 +228,12 @@ struct NPC {
 					this->dia_n += 1;
 					return false;
 				}
-				/*if (line == "5") {
+				else if (line == "5") {
 					d_window.close();
 					this->dia = true;
 					this->dia_n += 1;
 					return true;
-				}*/
+				}
 				else if (line == "0") {
 					in.close();
 					in.open(this->name + "_std.txt");
@@ -379,6 +337,171 @@ void inventory() {
 	}
 }
 
+struct Item {
+	int rad = 25;
+	Vector2i coords;
+	string type, name = " ";
+	int image_num;
+	Sprite image;
+	Texture texture;
+	Item(int x, int y, string type) {
+		image_num = rand() % 3 + 1;
+		this->coords = Vector2i(x, y);
+		this->type = type;
+		changeImage();
+	}
+	Item(int x, int y, string type, string name) {
+		image_num = rand() % 3 + 1;
+		this->coords = Vector2i(x,y);
+		this->type = type;
+		this->name = name;
+		changeImage();
+	}
+	void changeImage() {
+		texture.loadFromFile(type + "_" + to_string(image_num) + ".png");
+		image.setOrigin(rad / 2, rad / 2);
+		image.setTexture(texture);
+	}
+	//если бомба - выводит -1: надо начать наводиться/ письмо - выводит письмо и выводит 0/ хилка - выводит исцеляемое значение
+	int use() {
+		if (type == "letter") {
+			RenderWindow i_window(sf::VideoMode(608, 857), L"Inventory", Style::None);
+			Text text;
+			ifstream in(name + ".txt");
+			string line;
+			int y = 10;
+			text.setFont(font);
+			text.setCharacterSize(50);
+			text.setFillColor(sf::Color::Black);
+			text.setPosition(15, 10);
+
+			Sprite paper;
+			Texture bumaga;
+			if (not bumaga.loadFromFile("letter.png")) return -1;
+			paper.setTexture(bumaga);
+			paper.setPosition(0, 0);
+			i_window.clear(Color::Blue);
+			i_window.draw(paper);
+
+			while (getline(in, line)) {
+				text.setString(line);
+				text.setPosition(15, y);
+				y += 60;
+				i_window.draw(text);
+			}
+			i_window.display();
+			while (i_window.isOpen()) {
+				if (Keyboard::isKeyPressed(Keyboard::Escape)) i_window.close();
+			}
+			return 0;
+		}
+		else if (type == "healing") {
+			return rand() % 4 + rand() % 4 + 3;
+		}
+		else {
+			return -1;
+		}
+	}
+	void pick() {
+		if (type == "letter") {
+			RenderWindow i_window(sf::VideoMode(608, 857), L"Inventory", Style::None);
+			Text text;
+			ifstream in(name + ".txt");
+			string line;
+			int y = 10;
+			text.setFont(font);
+			text.setCharacterSize(50);
+			text.setFillColor(sf::Color::Black);
+			text.setPosition(15, 10);
+
+			Sprite paper;
+			Texture bumaga;
+			if (not bumaga.loadFromFile("letter.png")) {}
+			paper.setTexture(bumaga);
+			paper.setPosition(0, 0);
+			i_window.clear(Color::Blue);
+			i_window.draw(paper);
+
+			while (getline(in, line)) {
+				text.setString(line);
+				text.setPosition(15, y);
+				y += 60;
+				i_window.draw(text);
+			}
+			i_window.display();
+			while (i_window.isOpen()) {
+				if (Keyboard::isKeyPressed(Keyboard::Escape)) i_window.close();
+			}
+		}
+	}
+};
+
+struct Room {// номер комнаты = её индекс в массиве
+	int rad = 50; //радиус персонажа, главное не забыть)))
+	Vector2i coord0;
+	Vector2i coord1;
+	bool isObs = false;
+	vector<vector<int>> obstackles;
+	vector<NPC> characters;
+	bool isPerso = false;
+	vector<Item> items;
+	bool isItems = false;
+	vector<vector<int>> escapes;
+	// 0 - сверху/справа/снизу/слева (1/2/3/4)  
+	// 1 - начальная координата относительно левого верхнего угла комнаты
+	// 2 - и его ширина
+	// 3 - в какую комнату переходим
+	void changeAll(int x0, int y0, int x, int y) {
+		this->coord0 = { x0, y0 };
+		this->coord1 = { x,y };
+	}
+	void addEscape(int position, int doors, int dist, int next_room) {
+		escapes.push_back({ position, doors , dist, next_room });
+	}
+	void addObstackle(int x0, int y0, int x, int y) {
+		isObs = true;
+		obstackles.push_back({ x0, y0, x, y });
+	}
+	void addNPC(NPC ind) {
+		isPerso = true;
+		characters.push_back(ind);
+	}
+	void addItem(Item thing) {
+		isItems = true;
+		items.push_back(thing);
+	}
+	Vector3i isAbleToGo(Vector2f curPosition, Vector2f nextPosition) {
+		bool x = true;
+		bool y = true;
+		for (size_t i = 0; i < obstackles.size(); i++) {
+			if (x and (curPosition.y + rad > obstackles[i][1] and curPosition.y - rad < obstackles[i][3]) and (nextPosition.x + rad > obstackles[i][0] and nextPosition.x - rad < obstackles[i][2])) x = false;
+			if (y and (curPosition.x + rad > obstackles[i][0] and curPosition.x - rad < obstackles[i][2]) and (nextPosition.y + rad > obstackles[i][1] and nextPosition.y - rad < obstackles[i][3])) y = false;
+			if (not (y and x)) break;
+		}
+		return { 0 + (nextPosition.x - rad > coord0.x and nextPosition.x + rad < coord1.x and x), 0 + (nextPosition.y - rad > coord0.y and nextPosition.y + rad < coord1.y and y), isDoor(nextPosition) };
+	}
+	int isDoor(Vector2f nextPosition) {
+		for (size_t i = 0; i < escapes.size(); i++) {
+			if ((escapes[i][0] == 1 and nextPosition.y - rad < coord0.y and (nextPosition.x - rad > coord0.x + escapes[i][2] and nextPosition.x + rad < coord0.x + escapes[i][2] + escapes[i][1]))
+				or (escapes[i][0] == 2 and nextPosition.x + rad > coord1.x and (nextPosition.y - rad > coord0.y + escapes[i][2] and nextPosition.y + rad < coord0.y + escapes[i][2] + escapes[i][1]))
+				or (escapes[i][0] == 3 and nextPosition.y + rad > coord1.y and (nextPosition.x - rad > coord0.x + escapes[i][2] and nextPosition.x + rad < coord0.x + escapes[i][2] + escapes[i][1]))
+				or (escapes[i][0] == 4 and nextPosition.x - rad < coord0.x and (nextPosition.y - rad > coord0.y + escapes[i][2] and nextPosition.y + rad < coord0.y + escapes[i][2] + escapes[i][1]))) {
+				//cout << "YES" << "\n";
+				return escapes[i][3];
+			}
+		}
+		return -1;
+	}
+	bool isInRoom(Vector2f Position) {
+		bool is = Position.x < coord1.x and Position.y < coord1.y and Position.x > coord0.x and Position.y > coord0.y;
+		//if (not is) cout << Position.y << "\n";
+		return (is);
+	}
+	Room() {}
+};
+
+//	void fillRoomsMassive() 
+
 int main() {
 	Vector2u size = { 1000, 1000 };
 	Image icon;
@@ -396,7 +519,7 @@ int main() {
 	//крч в ближайших нескольких строках обитает подключение звука
 	Music music;
 	music.openFromFile("main_theme.mp3");
-	music.setVolume(25);
+	music.setVolume(0);
 	music.play();
 	music.setLoop(true);
 	//вот до сюда)
@@ -445,30 +568,85 @@ int main() {
 	int tek_room = 0;
 	Vector3i results;
 
-
+	vector<Item> selectedIems; 
 
 	// и дальше весёлые задавушки))))))))
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	Vector2i NPC_c;
-	NPC_c.x = 1;
-	NPC_c.y = 0;
-	int col = NPC_c.x;
 	int floor = 0; //этаж
-	NPC mas[1][2];
-	mas[0][0].changeAll("zxc", true, 100, 100, rad);
-	mas[0][1].changeAll("zxc", true, 1000, 1000, rad);
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	Clock time = Clock();
 	unsigned long gltime = 0;
 	short deltatime = 0;
-	guard guards[1][1];
+	Guard guards[1][1];
 	guards[0][0].changeAll(true, 1570, 1320, 1845, true);
-	room rooms[2][1];
-	rooms[0][0].changeAll(2024,1475,2957,2797);
-	rooms[0][0].addEscape(1, 933, 0, 1);
-	rooms[1][0].changeAll(1405,1159,3581,1475);
-	rooms[1][0].addEscape(3, 933, 620, 0);
-
+	vector<vector<Room>> rooms(2, vector<Room>(0));
+	//задача комнат:
+	{
+		string line;
+		int stage = 1;
+		int tek_i = -1;
+		int tek_j = 0;
+		int x0, y0, x, y;
+		ifstream in("rooms.txt");
+		while (getline(in, line)) {
+			istringstream iss(line);
+			if (iss >> x0 >> y0 >> x >> y) {
+				switch (stage) {
+				case 1:
+					rooms[tek_j].push_back(Room());
+					rooms[tek_j][tek_i].changeAll(x0, y0, x, y);
+					break;
+				case 2:
+					rooms[tek_j][tek_i].addEscape(x0, y0, x, y);
+					break;
+				case 3:
+					rooms[tek_j][tek_i].addObstackle(x0, y0, x, y);
+					break;
+				}
+			}
+			else {
+				if (line == "new room:") {
+					stage = 1;
+					tek_i++;
+				}
+				else if (line == "new floor:") {
+					tek_i = -1;
+					tek_j++;
+				}
+				else if (line == "escapes:") stage = 2;
+				else if (line == "obstackles:") stage = 3;
+			}
+		}
+		in.close();
+	} 
+	cout << rooms.size() << ": {" << rooms[0].size() << ", " << rooms[1].size() << "}\n";
+	//задача нпс и распихивание по комнатам:
+	{
+		string line, name;
+		int posX, posY, gender, room, tek_j = 0;
+		ifstream in("characters.txt");
+		while (getline(in, line)) {
+			stringstream ss(line);
+			if (ss >> room >> posX >> posY >> gender >> name) {
+				rooms[floor][room].addNPC(NPC(name, gender, posX, posY, rad));
+			}
+			else if (line == "new floor:") tek_j = 1;
+		}
+	}
+	//задача предметов и распихивание по комнатам:
+	{
+		string line, name, types[3] = {"letter", "potion", "bomb"};
+		int posX, posY, type, room, tek_j = 0;
+		ifstream in("items.txt");
+		while (getline(in, line)) {
+			stringstream ss(line);
+			if (ss >> room >> posX >> posY >> type) {
+				if (ss>>name) rooms[floor][room].addItem(Item(posX, posY, types[type], name));
+				else rooms[floor][room].addItem(Item(posX, posY, types[type]));
+			}
+			else if (line == "new floor:") tek_j = 1;
+		}
+	}
 	while (window.isOpen()) {
 		Event event;
 		deltatime = time.getElapsedTime().asMilliseconds() - gltime;
@@ -551,7 +729,7 @@ int main() {
 			hod = 0;
 			hero.setTextureRect(IntRect(frame * 100, hod, 100, 100));
 		}
-		results = rooms[tek_room][floor].isAbleToGo(hero_pos, { hero_pos.x + vx, hero_pos.y + vy });
+		results = rooms[floor][tek_room].isAbleToGo(hero_pos, { hero_pos.x + vx, hero_pos.y + vy });
 		//if (is_floor and len > rad) { hero_pos.x += vx; hero_pos.y += vy; len -= movespeed; }//двигаем, если не стенка
 		if (len > rad) {
 			hero_pos.x += vx * (results.x or results.z != -1);
@@ -563,9 +741,9 @@ int main() {
 			hod = 0;
 			hero.setTextureRect(IntRect(frame * 100, hod, 100, 100));
 		}
-		if ((not rooms[tek_room][floor].isInRoom(hero_pos)) and results.z != -1) {
+		if ((not rooms[floor][tek_room].isInRoom(hero_pos)) and results.z != -1) {
 			tek_room = results.z;
-			//cout << "/////////////////////////////////////////////////////////////////////////////////////////////////////////"<<"\n";
+			cout << results.z <<"\n";
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -581,9 +759,17 @@ int main() {
 				else map.setTexture(minimap_2);
 			}
 			else if (check < 150) {
-				for (int i = 0; i < col; i++) {
-					if (abs(mas[i][floor].coords.x - mouse_pos.x - dx) < rad and abs(mas[i][floor].coords.y - mouse_pos.y - dy) < rad) {
-						mas[i][floor].dialog(mas[i][floor].dia_n);
+				for (int i = 0; i < rooms[floor][tek_room].characters.size(); i++) {
+					if (abs(int(rooms[floor][tek_room].characters[i].coords.x - mouse_pos.x - dx)) < rad and abs(int( rooms[floor][tek_room].characters[i].coords.y - mouse_pos.y - dy)) < rad) {
+						rooms[floor][tek_room].characters[i].dialog();
+					}
+				}
+				for (int i = 0; i < rooms[floor][tek_room].items.size(); i++) {
+					if (abs(rooms[floor][tek_room].items[i].coords.x - mouse_pos.x - dx) < rad and abs(rooms[floor][tek_room].items[i].coords.y - mouse_pos.y - dy) < rad) {
+						rooms[floor][tek_room].items[i].pick();
+						selectedIems.push_back(rooms[floor][tek_room].items[i]);
+						auto iter = rooms[floor][tek_room].items.cbegin();
+						rooms[floor][tek_room].items.erase(iter + i);
 					}
 				}
 			}
@@ -598,8 +784,8 @@ int main() {
 		if (frames % 50 == 0) {
 			frame = 1 - frame;
 			hero.setTextureRect(IntRect(frame * 100, hod, 100, 100));
-			for (int i = 0; i < NPC_c.x; i++) {
-				mas[i][floor].set_frame(frame);
+			for (size_t i = 0; i < rooms[floor][tek_room].characters.size(); i++) {
+				rooms[floor][tek_room].characters[i].set_frame(frame);
 			}
 		}
 		hero.setPosition(hero_pos); //возможно возникает вопрос: а зачем задавать координаты, если можно
@@ -612,12 +798,22 @@ int main() {
 		window.draw(hero); //рисуем собсна героя
 		//window.draw(text_main);
 		if (tek_room < 4) {
-			for (int i = 0; i < 3; i++) {
-				guards[i][floor].turn(hero_pos, deltatime);
+			for (int i = 0; i < 1; i++) {
+				guards[floor][i].turn(hero_pos, deltatime);
 				window.draw(guards[i][floor].image);
 			}
 		}
-		if (rooms[tek_room][floor].is_perso) window.draw(mas[rooms[tek_room][floor].perso_i][floor].image);
+		//рисуем персонажей в комнате:
+		if (rooms[floor][tek_room].isPerso) {
+			for (size_t i = 0; i < rooms[floor][tek_room].characters.size(); i++) {
+				window.draw(rooms[floor][tek_room].characters[i].image);
+			}
+		}
+		if (rooms[floor][tek_room].isItems) {
+			for (size_t i = 0; i < rooms[floor][tek_room].items.size(); i++) {
+				window.draw(rooms[floor][tek_room].items[i].image);
+			}
+		}
 		window.display();//так надо
 
 		if (Keyboard::isKeyPressed(Keyboard::I) and is_mouse_in_window) {
