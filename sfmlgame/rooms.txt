@@ -29,4 +29,10 @@ new room:
 2024 2963 2957 4473
 escapes:
 1 311 311 0
+obstackles:
+2380 3170 2600 3734
+new floor:
+new room:
+(1;0)
+2024 1475 2957 2963
 end
