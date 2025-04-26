@@ -1,0 +1,39 @@
+15
+*The cook is sleeping deeply
+*The hunter knocks hit sit
+1
+AAA! Help! Fire!
+2
+No, no 
+I'm just watching for someone
+1
+Who are you?
+2
+Private detective
+3
+And what from me?
+3
+3
+What would you like to know?
+0
+2
+9
+15
+2
+Did you leave the kitchen at all?
+1
+*He's smiling.
+No...
+But... Okay, I did, 
+but I’d rather not talk about it
+0
+2
+Have you seen any strangers?
+1
+Nothing, my fiend
+2
+Sorry to bother you
+0
+1
+Bye!
+4

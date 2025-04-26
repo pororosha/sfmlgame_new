@@ -26,7 +26,7 @@ Hero hero1;
 struct Guard {
 	Guard() {}
 	void changeAll(bool os, double x0, double y0, int L, bool napr) {
-		texture.loadFromFile("guard.png");
+		texture.loadFromFile("characters/guard.png");
 		image.setOrigin(50, 50);
 		image.setTexture(texture);
 		this->os = os;
@@ -108,17 +108,17 @@ bool fight(bool aboba) {
 
 struct NPC {
 	int dia_n = 0;
-	bool gender = true, dia = false;
+	bool gender = true;
 	bool q1 = false;
 	bool q2 = false;
-	string name;
+	string name, atk_type;
 	Sprite image;
 	Texture texture;
 	Vector2f coords;
 	SoundBuffer  buffer;
 	Sound sound;
 	NPC() {}
-	NPC(string nam, bool gen, int x, int y, int rad) {
+	/*NPC(string nam, bool gen, int x, int y, int rad) {
 		name = nam;
 		coords.x = x;
 		coords.y = y;
@@ -132,71 +132,72 @@ struct NPC {
 		else buffer.loadFromFile("female_voice.mp3");
 		sound.setBuffer(buffer);
 		sound.setVolume(10);
-	}
-	void changeAll(string nam, bool gen, int x, int y, int rad) {
+	}*/
+	void changeAll(string nam, bool gen, int x, int y, string type, int rad) {
+		atk_type = type;
 		name = nam;
 		coords.x = x;
 		coords.y = y;
-		if (texture.loadFromFile(name + ".png")) cout << name + ".png" " - success\n";
+		if (texture.loadFromFile("characters/" + name + ".png")) cout << name + ".png" " - success\n";
 		image.setTexture(texture);
 		image.setTextureRect(IntRect(0, 0, 100, 100));
 		image.setOrigin(rad, rad);
 		image.setPosition(coords);
 		gender = gen;
-		if (gender) buffer.loadFromFile("male_voice.mp3");
-		else buffer.loadFromFile("female_voice.mp3");
+		if (gender) buffer.loadFromFile("audio/male_voice.mp3");
+		else buffer.loadFromFile("audio/female_voice.mp3");
 		sound.setBuffer(buffer);
 		sound.setVolume(10);
 	}
-	bool dialog() {
-		RenderWindow d_window(sf::VideoMode(750, 750), this->name, Style::Default);
+	bool dialog(Vector2i center_position) {
+		RenderWindow d_window(sf::VideoMode(750, 750), name, Style::None);
 		Vector2u size = d_window.getSize();
+		d_window.setPosition(Vector2i(center_position.x - size.x / 2, center_position.y - size.y / 2));
 		Vector2i mp = Mouse::getPosition(d_window);
-		bool spspr, sps = false, choose = false, ext = false;
+		bool spspr = true, sps = true, choose = false, ext = false, mouse_old = true;
 		string line;
 		Texture texture;
-		texture.loadFromFile("fight_icon.png");
+		texture.loadFromFile("dialogs/fight_icon.png");
 		Sprite image;
 		image.setTexture(texture);
 		image.setPosition(675, 340);
-		ifstream in(this->name + "_std.txt");
-		if (this->dia_n > 2) {
-			in.close();
-			in.open(this->name + "_hsm.txt");
-		}
+		ifstream in("dialogs/" + name + "_std.txt");
 		getline(in, line);
 		int n = stoi(line), it = 0;
 		getline(in, line);
+		if (dia_n > 2) {
+			in.close();
+			in.open("dialogs/" + name + "_hsm.txt");
+			getline(in, line);
+		}
+		else if (dia_n > 0 and dia_n < 3) {
+			in.close();
+			in.open("dialogs/" + this->name + "_std.txt");
+			for (int i = 0; i < n; i++) {
+				getline(in, line);
+			}
+			ext = true;
+		}
 		Text phrase, mf;
 		phrase.setFont(font);
 		phrase.setString(line);
 		phrase.setCharacterSize(50);
 		phrase.setFillColor(sf::Color::Black);
 		phrase.setPosition(10, 10);
+		phrase.setOutlineThickness(3.f);
+		phrase.setOutlineColor(sf::Color(120, 0, 0));
 		mf.setFont(font);
 		mf.setString("What happened?  Strangers?    Bye!  ");
 		mf.setCharacterSize(50);
 		mf.setFillColor(sf::Color::Black);
+		mf.setOutlineThickness(3.f);
+		mf.setOutlineColor(sf::Color(120,0,0));
 		mf.setPosition(10, size.y - 110);
 		Sprite background;
 		Texture txt;
-		if (not txt.loadFromFile(this->name + "_dia.png")) return 1;
+		if (not txt.loadFromFile("dialogs/" + name + "_dia.png")) return 1;
 		background.setTexture(txt);
-		sound.play();
-		if (dia_n > 0) {
-			for (int i = 0; i < n; i++) {
-				getline(in, line);
-			}
-		}
 		while (d_window.isOpen()) {
-
-			Event event;
-			while (d_window.pollEvent(event)) {
-				if (event.type == Event::Closed) d_window.close();
-				else if (event.type == Event::Resized) {
-					d_window.setSize(size);
-				}
-			}
 
 			spspr = sps;
 			mp = Mouse::getPosition(d_window);
@@ -207,7 +208,7 @@ struct NPC {
 			}
 
 			if (choose) {
-				if (Keyboard::isKeyPressed(Keyboard::Num1) or (Mouse::isButtonPressed(Mouse::Left) and (mp.x > 0 and mp.y > size.y-220 and mp.x < size.x/3 and mp.y < size.y))) {
+				if (Keyboard::isKeyPressed(Keyboard::Num1) or (not mouse_old and Mouse::isButtonPressed(Mouse::Left) and (mp.x > 0 and mp.y > size.y-220 and mp.x < size.x/3 and mp.y < size.y))) {
 					getline(in, line);
 					it = stoi(line);
 					for (int i = 0; i < it; i++) {
@@ -217,7 +218,7 @@ struct NPC {
 					sps = true;
 					spspr = false;
 				}
-				else if (Keyboard::isKeyPressed(Keyboard::Num2) or (Mouse::isButtonPressed(Mouse::Left) and (mp.x > size.x/3 and mp.y > size.y - 220 and mp.x < size.x*2/3 and mp.y < size.y))) {
+				else if (Keyboard::isKeyPressed(Keyboard::Num2) or (not mouse_old and Mouse::isButtonPressed(Mouse::Left) and (mp.x > size.x/3 and mp.y > size.y - 220 and mp.x < size.x*2/3 and mp.y < size.y))) {
 					getline(in, line);
 					getline(in, line);
 					it = stoi(line);
@@ -228,7 +229,7 @@ struct NPC {
 					sps = true;
 					spspr = false;
 				}
-				else if (Keyboard::isKeyPressed(Keyboard::Num3) or (Mouse::isButtonPressed(Mouse::Left) and (mp.x > size.x*2/3 and mp.y > size.y - 220 and mp.x < size.x and mp.y < size.y))) {
+				else if (Keyboard::isKeyPressed(Keyboard::Num3) or (not mouse_old and Mouse::isButtonPressed(Mouse::Left) and (mp.x > size.x*2/3 and mp.y > size.y - 220 and mp.x < size.x and mp.y < size.y))) {
 					getline(in, line);
 					getline(in, line);
 					getline(in, line);
@@ -246,19 +247,12 @@ struct NPC {
 				getline(in, line);
 				if (line == "4") { 
 					d_window.close(); 
-					this->dia = true;
-					this->dia_n += 1;
-					return false;
-				}
-				else if (line == "5") {
-					d_window.close();
-					this->dia = true;
 					this->dia_n += 1;
 					return false;
 				}
 				else if (line == "0") {
 					in.close();
-					in.open(this->name + "_std.txt");
+					in.open("dialogs/" + this->name + "_std.txt");
 					for (int i = 0; i < n; i++) {
 						getline(in, line);
 					}
@@ -269,7 +263,7 @@ struct NPC {
 					getline(in, line);
 					phrase.setString(line);
 					phrase.setPosition(10, 10);
-					this->sound.play();
+					sound.play();
 				}
 				else if (line == "2") {
 					getline(in, line);
@@ -281,7 +275,7 @@ struct NPC {
 					getline(in, line);
 					phrase.setString(line);
 					phrase.setPosition(10, 10);
-					this->sound.play();
+					sound.play();
 					getline(in, line);
 					int lish = stoi(line);
 					for (int i = 0; i < lish; i++) {
@@ -290,10 +284,10 @@ struct NPC {
 				}
 				else {
 					phrase.setString(line);
-					if (phrase.getPosition().y == 10) this->sound.play();
+					if (phrase.getPosition().y == 10 and line.at(0) != '*' and not choose) this->sound.play();
 				}
 			}
-
+			mouse_old = Mouse::isButtonPressed(Mouse::Left);
 			d_window.clear(Color::Blue);
 			d_window.draw(background);
 			d_window.draw(phrase);
@@ -339,7 +333,7 @@ struct Item {
 		coords = Vector2f(x, y);
 		type = typ;
 		name = nam;
-		texture.loadFromFile(type + "_" + to_string(image_num) + ".png");
+		texture.loadFromFile("items/" + type + "_" + to_string(image_num) + ".png");
 		image.setOrigin(rad / 2, rad / 2);
 		image.setTexture(texture);
 		image.setPosition(coords);
@@ -348,7 +342,7 @@ struct Item {
 		image_num = rand() % 3 + 1;
 		coords = Vector2f(x, y);
 		type = typ;
-		texture.loadFromFile(type + "_" + to_string(image_num) + ".png");
+		texture.loadFromFile("items/" + type + "_" + to_string(image_num) + ".png");
 		image.setOrigin(rad / 2, rad / 2);
 		image.setTexture(texture);
 		image.setPosition(coords);
@@ -358,7 +352,7 @@ struct Item {
 		if (type == "letter") {
 			RenderWindow i_window(sf::VideoMode(608, 857), L"Inventory", Style::None);
 			Text text;
-			ifstream in(name + ".txt");
+			ifstream in("letters/" + name + ".txt");
 			string line;
 			int y = 10;
 			text.setFont(font);
@@ -368,7 +362,7 @@ struct Item {
 
 			Sprite paper;
 			Texture bumaga;
-			if (not bumaga.loadFromFile("letter.png")) return -1;
+			if (not bumaga.loadFromFile("letters/letter.png")) return -1;
 			paper.setTexture(bumaga);
 			paper.setPosition(0, 0);
 			i_window.clear(Color::Blue);
@@ -381,8 +375,10 @@ struct Item {
 				i_window.draw(text);
 			}
 			i_window.display();
+			bool m_old = true;
 			while (i_window.isOpen()) {
-				if (Keyboard::isKeyPressed(Keyboard::Escape)) i_window.close();
+				if (Keyboard::isKeyPressed(Keyboard::Escape) or (Mouse::isButtonPressed(Mouse::Left) and not m_old)) i_window.close();
+				m_old = Mouse::isButtonPressed(Mouse::Left);
 			}
 			return 0;
 		}
@@ -397,7 +393,7 @@ struct Item {
 		if (type == "letter") {
 			RenderWindow i_window(sf::VideoMode(608, 857), L"letter", Style::None);
 			Text text;
-			ifstream in(name + ".txt");
+			ifstream in("letters/" + name + ".txt");
 			string line;
 			int y = 10;
 			text.setFont(font);
@@ -407,7 +403,7 @@ struct Item {
 
 			Sprite paper;
 			Texture bumaga;
-			if (not bumaga.loadFromFile("letter.png")) {}
+			if (not bumaga.loadFromFile("letters/letter.png")) {}
 			paper.setTexture(bumaga);
 			paper.setPosition(0, 0);
 			i_window.clear(Color::Blue);
@@ -420,8 +416,10 @@ struct Item {
 				i_window.draw(text);
 			}
 			i_window.display();
+			bool m_old = true;
 			while (i_window.isOpen()) {
-				if (Keyboard::isKeyPressed(Keyboard::Escape)) i_window.close();
+				if (Keyboard::isKeyPressed(Keyboard::Escape) or (Mouse::isButtonPressed(Mouse::Left) and not m_old)) i_window.close();
+				m_old = Mouse::isButtonPressed(Mouse::Left);
 			}
 		}
 	}
@@ -491,8 +489,10 @@ struct Room {// номер комнаты = её индекс в массиве
 	Room() {}
 };
 
-int inventory(vector<Item> items, int hits, int max_hits) {
+int inventory(Vector2i center_position, vector<Item> items, int hits, int max_hits) {
 	RenderWindow i_window(sf::VideoMode(460, 110 * (int(items.size() / 4) + (items.size() % 4 > 0) + 1) + 50), L"Inventory", Style::None);
+	Vector2u size = i_window.getSize();
+	i_window.setPosition(Vector2i(center_position.x - size.x / 2, center_position.y - size.y / 2));
 	/*attack.setFillColor(Color::Green);
 	RectangleShape damage(Vector2f(600.f, 300.f));
 	damage.setFillColor(Color::Red);
@@ -507,7 +507,7 @@ int inventory(vector<Item> items, int hits, int max_hits) {
 	i_window.clear(Color::Blue);
 	Texture texture;
 	i_window.clear(Color::Black);
-	texture.loadFromFile("for_inventory.png");
+	texture.loadFromFile("items/for_inventory.png");
 	Sprite image;
 	image.setTexture(texture);
 	int n = 0;
@@ -516,7 +516,7 @@ int inventory(vector<Item> items, int hits, int max_hits) {
 		i_window.draw(image);
 		n += 110;
 	}
-	texture.loadFromFile("for_inventory_hits.png");
+	texture.loadFromFile("items/for_inventory_hits.png");
 	image.setTexture(texture);
 	image.setPosition(0, i_window.getSize().y - 50);
 	i_window.draw(image);
@@ -554,23 +554,27 @@ int inventory(vector<Item> items, int hits, int max_hits) {
 //	void fillRoomsMassive() 
 
 int main() {
+	bool THEEND = false;
+	int fights = 0;
+	bool is_complete = false;
 	Vector2i mouse_pos; //текущие координаты курсора
 	Vector2u size = { 1000, 1000 };
 	Image icon;
 	Sprite load;
 	Texture load_t;
-	if (not load_t.loadFromFile("loading.png")) return -1;
+	if (not load_t.loadFromFile("world/loading.png")) return -1;
 	load.setTexture(load_t);
 	load.setPosition(0, 0);
-	if (!icon.loadFromFile("icon.png")) return 1;
+	if (!icon.loadFromFile("world/icon.png")) return 1;
 	RenderWindow window(sf::VideoMode(size.x, size.y), L"Illusion", Style::Default);//создаём окно
 	window.setVerticalSyncEnabled(true);//изначально окно вертикально, чтоб без рандомных углов
 	window.setIcon(50, 50, icon.getPixelsPtr());
 	window.draw(load);
 	window.display();
+	Clock time = Clock();
 	//крч в ближайших нескольких строках обитает подключение звука
 	Music music;
-	music.openFromFile("main_theme.mp3");
+	music.openFromFile("audio/main_theme.mp3");
 	music.setVolume(25);
 	music.play();
 	music.setLoop(true);
@@ -594,9 +598,9 @@ int main() {
 	hero.setTextureRect(IntRect(0, 0, 100, 100));
 	Sprite map;
 	Texture minimap_1;
-	if (not minimap_1.loadFromFile("map_1.png")) return -1;
+	if (not minimap_1.loadFromFile("world/map_1.png")) return -1;
 	Texture minimap_2;
-	if (not minimap_2.loadFromFile("map_2.png")) return -1;
+	if (not minimap_2.loadFromFile("world/map_2.png")) return -1;
 	map.setTexture(minimap_1);
 	map.setPosition(0, 0);
 	float vx = 0; //скорость персонажа
@@ -606,13 +610,13 @@ int main() {
 	double base_speed = 0.42;
 	double movespeed; //скорость героя
 	Vector2i mouse_old; //координаты курсора кадра назад
-	Vector2i viewcenter = Vector2i(size.x / 2, size.y / 2); //центр камеры (вид)
-	hero.setPosition(viewcenter.x, viewcenter.y);//начальная позиция героя
+	Vector2i viewcenter = Vector2i(hero_pos.x, hero_pos.y);
+	view.setCenter(viewcenter.x, viewcenter.y);
 	bool isckm = false;//проверка, нажата ли центральная кнопка мыши
 	bool isckm_old = false; //была ли нажата ли центральная кнопка мыши в прошлом кадре
 	bool islkm_old = false; //была ли нажата ли левая кнопка мыши в прошлом кадре
-	int dx = 0;//перемещение камеры по х
-	int dy = 0;//по у
+	int dx = hero_pos.x - (size.x / 2);//перемещение камеры по х
+	int dy = hero_pos.y - (size.y / 2);//по у
 	bool is_mouse_in_window;//в окне ли курсор?
 	bool is_floor;//находится ли курсор в допустимой для перемещения области
 	int check;
@@ -627,12 +631,13 @@ int main() {
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	int floor = 0; //этаж
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	Clock time = Clock();
 	unsigned long gltime = 0;
 	short deltatime = 0;
-	Guard guards[2][1];
+	Guard guards[2][2];
 	guards[0][0].changeAll(true, 1570, 1320, 1845, true);
-	guards[1][0].changeAll(true, 1570, 1320, 1845, true);
+	guards[1][0].changeAll(true, 325, 1320, 2035, true);
+	guards[0][1].changeAll(false, 1550, 1323, 1300, true);
+	guards[1][1].changeAll(true, 2675, 1320, 2035, true);
 	vector<vector<Room>> rooms(2, vector<Room>(0));
 	//задача комнат:
 	{
@@ -641,7 +646,7 @@ int main() {
 		int tek_i = -1;
 		int tek_j = 0;
 		int x0, y0, x, y;
-		ifstream in("rooms.txt");
+		ifstream in("lists/rooms.txt");
 		while (getline(in, line)) {
 			istringstream iss(line);
 			if (iss >> x0 >> y0 >> x >> y) {
@@ -676,23 +681,23 @@ int main() {
 	cout << rooms.size() << ": {" << rooms[0].size() << ", " << rooms[1].size() << "}\n";
 	//задача нпс и распихивание по комнатам:
 	{
-		string line, name;
+		string line, name, atk_type;
 		int posX, posY, gender, room, tek_j = 0;
-		ifstream in("characters.txt");
+		ifstream in("lists/characters.txt");
 		while (getline(in, line)) {
 			stringstream ss(line);
-			if (ss >> room >> posX >> posY >> gender >> name) {
-				rooms[floor][room].addNPC(NPC());
-				rooms[floor][room].characters.back().changeAll(name, gender, posX, posY, rad);
+			if (ss >> room >> posX >> posY >> gender >> name >> atk_type) {
+				rooms[tek_j][room].addNPC(NPC());
+				rooms[tek_j][room].characters.back().changeAll(name, gender, posX, posY, atk_type, rad);
 			}
-			else if (line == "new floor:") tek_j = 1;
+			else if (line == "new floor:") tek_j++;
 		}
 	}
 	//задача предметов и распихивание по комнатам:
 	{
-		string line, name, types[3] = {"letter", "potion", "bomb"};
+		string line, name, types[3] = {"letter", "healing", "bomb"};
 		int posX, posY, type, room, tek_j = 0;
-		ifstream in("items.txt");
+		ifstream in("lists/items.txt");
 		while (getline(in, line)) {
 			stringstream ss(line);
 			if (ss >> room >> posX >> posY >> type) {
@@ -706,6 +711,10 @@ int main() {
 			}
 			else if (line == "new floor:") tek_j = 1;
 		}
+	}
+
+	while (true) {
+		if (time.getElapsedTime().asSeconds() > 0) break;///////////////////////////////////////////////////////////////////////////////////////////////////
 	}
 
 	while (window.isOpen()) {
@@ -804,7 +813,13 @@ int main() {
 		}
 		if ((not rooms[floor][tek_room].isInRoom(hero_pos)) and results.z != -1) {
 			tek_room = results.z;
+			if (tek_room == 100) THEEND = true;
 			cout << results.z <<"\n";
+		}
+
+		if (THEEND == true) {
+			window.close();
+			break;
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -819,26 +834,28 @@ int main() {
 				if (floor == 0) map.setTexture(minimap_1);
 				else map.setTexture(minimap_2);
 			}
-			else if (check < 150) {
-				for (int i = 0; i < rooms[floor][tek_room].characters.size(); i++) {
-					if (abs(rooms[floor][tek_room].characters[i].coords.x - mouse_pos.x - dx) < rad and abs(rooms[floor][tek_room].characters[i].coords.y - mouse_pos.y - dy) < rad) {
-						if (rooms[floor][tek_room].characters[i].dialog()) {
-							if (fight(true)) {
-								auto iter = rooms[floor][tek_room].characters.cbegin();
-								rooms[floor][tek_room].characters.erase(iter + i);
-							}
+			if (check > 150) continue;
+			for (int i = 0; i < rooms[floor][tek_room].characters.size(); i++) {
+				if (abs(rooms[floor][tek_room].characters[i].coords.x - mouse_pos.x - dx) < rad and abs(rooms[floor][tek_room].characters[i].coords.y - mouse_pos.y - dy) < rad) {
+					if (rooms[floor][tek_room].characters[i].dialog(Vector2i(window.getPosition().x + window.getSize().x / 2, window.getPosition().y + window.getSize().y / 2))) {
+						if (rooms[floor][tek_room].characters[i].name == "Jimm") is_complete = true;
+						if (fight(true)) {
+							auto iter = rooms[floor][tek_room].characters.cbegin();
+							rooms[floor][tek_room].characters.erase(iter + i);
 						}
-					}
-				}
-				for (int i = 0; i < rooms[floor][tek_room].items.size(); i++) {
-					if (abs(rooms[floor][tek_room].items[i].coords.x - mouse_pos.x - dx) < rad and abs(rooms[floor][tek_room].items[i].coords.y - mouse_pos.y - dy) < rad) {
-						rooms[floor][tek_room].items[i].pick();
-						selectedIems.push_back(rooms[floor][tek_room].items[i]);
-						auto iter = rooms[floor][tek_room].items.cbegin();
-						rooms[floor][tek_room].items.erase(iter + i);
+						fights++;
 					}
 				}
 			}
+			for (int i = 0; i < rooms[floor][tek_room].items.size(); i++) {
+				if (abs(rooms[floor][tek_room].items[i].coords.x - mouse_pos.x - dx) < rad and abs(rooms[floor][tek_room].items[i].coords.y - mouse_pos.y - dy) < rad) {
+					rooms[floor][tek_room].items[i].pick();
+					selectedIems.push_back(rooms[floor][tek_room].items[i]);
+					auto iter = rooms[floor][tek_room].items.cbegin();
+					rooms[floor][tek_room].items.erase(iter + i);
+				}
+			}
+			
 		}
 		islkm_old = Mouse::isButtonPressed(Mouse::Left);
 
@@ -863,14 +880,12 @@ int main() {
 		window.draw(map);
 		window.draw(hero); //рисуем собсна героя
 		if (tek_room < 4) {
-			for (int i = 0; i < 1; i++) {
+			for (int i = 0; i < 2; i++) {
 				if (guards[floor][i].isActive) {
 					if (guards[floor][i].turn(hero_pos, deltatime)) {
-						if (fight(true)) {
-							guards[floor][i].isActive = false;
-						}
+						if (fight(true)) guards[floor][i].isActive = false;
 					}
-					window.draw(guards[i][floor].image);
+					window.draw(guards[floor][i].image);
 				}
 			}
 		}
@@ -883,22 +898,49 @@ int main() {
 		}
 
 		if (Keyboard::isKeyPressed(Keyboard::I) and is_mouse_in_window) {
-			int n = inventory(selectedIems, hero1.hits, hero1.max_hits);
+			int n = inventory(Vector2i(window.getPosition().x+window.getSize().x/2, window.getPosition().y + window.getSize().y / 2), 
+				selectedIems, hero1.hits, hero1.max_hits);
 			if (n > -1) { 
 				n = selectedIems[n].use(); 
 				if (n > 0) {
 					hero1.hits = min(hero1.hits+n, hero1.max_hits);
 				}
-				else if (n = -1) {
+				else if (n == -1) {
 					warning_color = 255;
 				}
 			}
 			text_main.setString("Hits: " + to_string(hero1.hits) + "/" + to_string(hero1.max_hits));
 		}
-		warning_color -= deltatime / 3.0;
+		warning_color -= deltatime / 5.0;
 		text_main.setFillColor(Color{255, 0, 0, Uint8(max(int(warning_color), 0))});
 		window.draw(text_main);
-		window.display();//так надо
+		window.display();
+	}
+	if (THEEND) {
+		RenderWindow i_window(sf::VideoMode(900, 900), L"Inventory", Style::Close);
+		Sprite paper;
+		Texture bumaga;
+		if (not is_complete) {
+			bumaga.loadFromFile("world/notend.png");
+		}
+		else if (fights < 3) {
+			bumaga.loadFromFile("world/goodend.png");
+		}
+		else {
+			bumaga.loadFromFile("world/badend.png");
+		}
+		paper.setTexture(bumaga);
+		paper.setPosition(0, 0);
+		i_window.clear(Color::Blue);
+		i_window.draw(paper);
+		i_window.display();
+		bool m_old = true;
+		while (i_window.isOpen()) {
+			Event event;
+			while (window.pollEvent(event)) { if (event.type == Event::Closed) i_window.close();}
+			if (Keyboard::isKeyPressed(Keyboard::Escape) or (Mouse::isButtonPressed(Mouse::Left) and not m_old)) i_window.close();
+			m_old = Mouse::isButtonPressed(Mouse::Left);
+		}
 	}
 	return 0;
 }

@@ -1,0 +1,45 @@
+18
+*The man is in a light sleep
+2
+Hello?
+1
+Oh, hello dude
+Watching for something?
+2
+No, just doing an inspection.
+How do you feel?
+1
+So good.
+Something else?
+2
+Ummm...
+3
+*?
+3
+3
+Something else?
+0
+2
+11
+18
+2
+Who are you?
+1
+The tanner
+2
+What's the tanner doing here? 
+1
+Supplies of materials to
+the capital were discussed here
+0
+2
+Have you seen any strangers?
+1
+Nothing, my fiend
+But I heard someone 
+entered the house through the kitchen
+It's even a little scary
+0
+1
+Bye!
+4

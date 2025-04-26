@@ -1,0 +1,44 @@
+14
+*The girl tried to hide
+*But not very successfully
+2
+I see you
+1
+*She looks at you 
+*with eyes full of fear.
+2
+There’s no need to be afraid of me.
+I just want to ask you a few questions.
+3
+Hm?
+3
+3
+What would you like to know?
+0
+2
+10
+21
+2
+What did you do this evening?
+1
+I...
+I'm just cleaned and delivered food
+Nothing else
+and then...
+Brrr
+0
+2
+Have you seen any strangers?
+1
+YES! HELL! YES!
+Lady doesn't believe me
+иut I'm sure, someone 
+broke into the storeroom.
+The wind couldn't have scattered
+things like that
+2
+Thanks for your bravery
+0
+1
+Bye!
+4

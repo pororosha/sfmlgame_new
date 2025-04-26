@@ -1,0 +1,58 @@
+21
+*The dwarf is fast asleep
+*The hunter barely wakes him up
+2
+Good morning!
+1
+Hello!
+Who are you?
+To hell!
+I hope you brought me some ale?
+2
+I'm a hunter
+1
+Hunter... 
+Do I look like a boar?
+Okay, maybe a little, AHAHA!
+2
+No, I'm a monster hunter...
+3
+And what are you want from me?
+3
+3
+What would you like to know?
+0
+2
+19
+28
+2
+What did you do this evening?
+1
+Oh, we discussed the negotiations
+that took place at the palace
+with our eastern "friends"
+and then...
+we're caroused all night long
+2
+With?
+1
+Are you need names?
+well...
+Bartholomeo Winter or...
+Ivo Tenner and...
+Alaric Weaver.
+that's all, leave me please
+0
+2
+Have you seen any strangers?
+1
+Hmm... 
+No.
+But I didn't watchin around
+Understand me?
+2
+Well...
+0
+1
+Bye!
+4

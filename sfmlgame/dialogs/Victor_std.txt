@@ -1,0 +1,42 @@
+18
+*Reading a book by candlelight
+*He's not afraid 
+*of your appearance at all.
+1
+Good evening!
+2
+Hello...
+I need to check the shutters...
+1
+Don't lie to me
+I can see the scars on your arms.
+2
+Ok, I just want to ask you
+a few questions
+3
+*He raises his eyebrow in question
+3
+3
+Something else?
+0
+2
+9
+16
+2
+What did you do this evening?
+1
+Nothing.
+No one needed a doctor's help.
+So I just sat and read.
+0
+2
+Have you seen any strangers?
+1
+Ummm...
+Some shadows in the garden
+But, for sure,
+this is senile imagination.
+0
+1
+Good bye!
+4

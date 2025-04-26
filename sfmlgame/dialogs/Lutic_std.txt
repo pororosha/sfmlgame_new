@@ -1,0 +1,52 @@
+21
+*The bard is fast asleep
+*Lovely holding the lute in her hands
+2
+Good morning!
+1
+Hello darkness, my old friend,
+I’ve come to talk with you again
+2
+Tssss!
+1
+ow...
+The Banquet is over
+2
+Yep
+Answer me on couple of quetions
+3
+M?
+3
+3
+What would you like to know?
+0
+2
+16
+24
+2
+What did you do this evening?
+1
+I was playing music
+nothing more
+playing until sleep
+But... Okay,
+something interesting hapened
+this evening.
+It's better not to ask 
+the young widow about it.
+2
+Umm...
+Okay, I get it
+0
+2
+Have you seen any strangers?
+1
+No, I spent this evening 
+inspired by the muse
+Understand me?
+2
+Okay...
+0
+1
+Bye!
+4

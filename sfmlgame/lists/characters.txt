@@ -1,0 +1,12 @@
+4 2720 3820 1 John melee
+9 1235 2986 1 Bob melee
+7 767 1809 1 Daniel mage
+3 3385 2648 1 Gans melee
+19 3897 1971 0 Elen mage
+20 4514 1939 1 Lord range
+new floor:
+9 1613 2044 0 Liza range
+5 3221 833 0 Clare mage
+6 4008 892 1 Lutic mage
+8 630 2580 1 Bartholomeo range 
+2 681 760 1 Jimm melee

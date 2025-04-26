@@ -1,0 +1,49 @@
+21
+*The lord wheezes and tosses.
+*The hunter gently shakes him.
+2
+My lord, I'm sorry to disturb you.
+1
+Who are you?
+Ah, a new servant...
+leave me alone, my head hurts
+2
+I can't, you are in danger
+1
+Danger?.. 
+Someone attacked us?
+2
+No, but someone enters the estate
+and hides within its walls
+don't leave the room, lord
+3
+What the...
+3
+3
+What do you want?
+0
+2
+11
+20
+2
+What did you do this evening?
+1
+I was negotiating with Merchant Bart
+about the supply of clothes
+to the capital. And then...
+we're drinking with my wife Elen.
+Boring evening...
+0
+2
+Have you seen any strangers?
+1
+Hmm... 
+My dog, Toby,
+was growling at the bushes...
+But dogs always growl... 
+2
+Thank you
+0
+1
+Bye!
+4

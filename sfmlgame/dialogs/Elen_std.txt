@@ -1,0 +1,50 @@
+21
+*A drunk lady sleeps sweetly.
+*You wake her by lighting a candle.
+2
+I'm sorry
+1
+Who are you?
+Get away from me!
+2
+Rest assured, my lady.
+I am simply checking for draught.
+1
+*She views you with distrust
+I have no male servants
+2
+Alright, you got me.
+I’m еracking someone here
+And I need your help.
+3
+With?
+3
+3
+Why are you still here?
+0
+2
+11
+21
+2
+What did you do this evening?
+1
+I spent a lot of time with Claire
+She’s heartbroken over her husband.
+And when... she went to rest
+I had a few words
+with my husband and Bartolomeo.
+0
+2
+Have you seen any strangers?
+1
+No! 
+But... 
+Liza said that someone broke 
+into the pantry
+but that's a small thing, isn't it?
+2
+No, that's not true.
+0
+1
+Bye!
+4

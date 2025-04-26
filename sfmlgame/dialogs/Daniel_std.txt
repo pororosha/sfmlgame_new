@@ -1,0 +1,43 @@
+15
+*mumbling something.
+*Ignores you
+2
+Father...
+1
+A demon?! 
+Ah... the man. 
+What happened?
+2
+Nothing, father...
+1
+Daniel
+2
+I’m actually looking for a demon here
+3
+And what are youu want from me?
+3
+3
+Is there anything more?
+0
+2
+9
+17
+2
+What did you do this evening?
+1
+I was comforting Miss Claire
+But a few days ago she was Missis
+Ohhh, I hope it's successful
+0
+2
+Have you seen any strangers?
+1
+I didn't see
+But...
+I feel evil here.
+You’re the only one 
+I can count on
+0
+1
+Bye!
+4

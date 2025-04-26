@@ -1,0 +1,45 @@
+15
+*Is deeply immersed in his writing.
+*You start the dialog.
+2
+Ummm...
+1
+Who's there?
+Get out of here!
+OUT! OUT!
+2
+Shut up!
+Or I'll cut you.
+3
+*He looks at you silently and fearfully
+3
+3
+Wha... what're you want?
+0
+2
+15
+22
+2
+What did you do this evening?
+1
+I was talking to the locals
+about fabric supplies
+And I drank a little, of course
+2
+Names?
+1
+Ummm...
+Alaric Weaver, John Mercer...
+Ivo Tenner and... that's all
+0
+2
+Have you seen any strangers?
+1
+No! 
+Sorry
+I've been busy
+very-very busy
+0
+1
+Bye!
+4
